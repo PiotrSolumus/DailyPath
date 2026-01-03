@@ -1,0 +1,29 @@
+---
+// Logout page - immediately signs out and redirects
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wylogowanie - DailyPath</title>
+  </head>
+  <body>
+    <div class="flex min-h-screen items-center justify-center">
+      <p>Wylogowywanie...</p>
+    </div>
+
+    <script>
+      import { supabaseClient } from '../db/supabase.client';
+
+      async function logout() {
+        await supabaseClient.auth.signOut();
+        window.location.href = '/login';
+      }
+
+      logout();
+    </script>
+  </body>
+</html>
+

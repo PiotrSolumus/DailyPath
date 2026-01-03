@@ -422,3 +422,4 @@ Wymagania jakościowe (NFR, skrót):
 - Czas renderu widoku planu pracownika p90 < 2 s przy typowym obciążeniu (wspiera cel manager_view_time).
 
 
+

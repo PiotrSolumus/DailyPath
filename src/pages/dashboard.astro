@@ -1,0 +1,39 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+
+// Get user from middleware (can be null if not logged in)
+const user = Astro.locals.user;
+---
+
+<AppLayout title="Dashboard - DailyPath" user={user}>
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <p class="text-muted-foreground">Witaj w DailyPath!</p>
+    </div>
+    
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <!-- Stats cards will go here -->
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="text-sm font-medium text-muted-foreground">Plan wypełnienia</h3>
+        <p class="mt-2 text-3xl font-bold">75%</p>
+      </div>
+      
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="text-sm font-medium text-muted-foreground">Zadania aktywne</h3>
+        <p class="mt-2 text-3xl font-bold">12</p>
+      </div>
+      
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="text-sm font-medium text-muted-foreground">Czas dzisiaj</h3>
+        <p class="mt-2 text-3xl font-bold">6.5h</p>
+      </div>
+      
+      <div class="rounded-lg border bg-card p-6">
+        <h3 class="text-sm font-medium text-muted-foreground">Zadania zakończone</h3>
+        <p class="mt-2 text-3xl font-bold">24</p>
+      </div>
+    </div>
+  </div>
+</AppLayout>
+

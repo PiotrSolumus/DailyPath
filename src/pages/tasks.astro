@@ -1,0 +1,25 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { TaskFiltersWrapper } from "../components/tasks/TaskFiltersWrapper";
+import { TaskListWrapper } from "../components/tasks/TaskListWrapper";
+import { CreateTaskModalWrapper } from "../components/tasks/CreateTaskModalWrapper";
+
+// Get user from middleware (can be null if not logged in)
+const user = Astro.locals.user;
+---
+
+<AppLayout title="Zadania - DailyPath" user={user}>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Zadania</h1>
+        <p class="text-muted-foreground">Zarządzaj swoimi zadaniami</p>
+      </div>
+      <CreateTaskModalWrapper client:load initialUser={user} />
+    </div>
+
+    <TaskFiltersWrapper client:load initialUser={user} />
+    <TaskListWrapper client:load initialUser={user} />
+  </div>
+</AppLayout>
+

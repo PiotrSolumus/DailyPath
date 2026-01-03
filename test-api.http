@@ -1,0 +1,38 @@
+# API Testing File for GET /api/tasks
+# Use with REST Client extension in VS Code or similar tools
+
+### Variables
+@baseUrl = http://localhost:3000
+@anonKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+
+### Test 1: Unauthorized request (no auth header) - Expected: 401
+GET {{baseUrl}}/api/tasks
+
+### Test 2: Invalid status parameter - Expected: 400
+GET {{baseUrl}}/api/tasks?status=invalid
+Authorization: Bearer {{anonKey}}
+
+### Test 3: Invalid UUID format - Expected: 400
+GET {{baseUrl}}/api/tasks?department_id=not-a-uuid
+Authorization: Bearer {{anonKey}}
+
+### Test 4: Valid request (all tasks) - Expected: 200 or empty array
+GET {{baseUrl}}/api/tasks
+Authorization: Bearer {{anonKey}}
+
+### Test 5: Filter by status=todo
+GET {{baseUrl}}/api/tasks?status=todo
+Authorization: Bearer {{anonKey}}
+
+### Test 6: Filter by priority=high
+GET {{baseUrl}}/api/tasks?status=in_progress&priority=high
+Authorization: Bearer {{anonKey}}
+
+### Test 7: Filter by is_private=true
+GET {{baseUrl}}/api/tasks?is_private=true
+Authorization: Bearer {{anonKey}}
+
+### Test 8: Combined filters
+GET {{baseUrl}}/api/tasks?status=in_progress&priority=high&is_private=false
+Authorization: Bearer {{anonKey}}
+

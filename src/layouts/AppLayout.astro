@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import { AppLayout } from "../components/layout/AppLayout";
+import type { UserMeDTO } from "../types";
+
+interface Props {
+  title?: string;
+  user?: UserMeDTO | null;
+}
+
+const { title = "DailyPath", user } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <AppLayout client:load initialUser={user} currentPath={currentPath}>
+      <slot />
+    </AppLayout>
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+</style>
+

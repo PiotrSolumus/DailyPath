@@ -1,0 +1,19 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { ReportViewWrapper } from "../components/reports/ReportViewWrapper";
+
+// Get user from middleware (can be null if not logged in)
+const user = Astro.locals.user;
+---
+
+<AppLayout title="Raporty - DailyPath" user={user}>
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Raporty</h1>
+      <p class="text-muted-foreground">Analizuj czas pracy i postępy zadań</p>
+    </div>
+
+    <ReportViewWrapper client:load initialUser={user} />
+  </div>
+</AppLayout>
+

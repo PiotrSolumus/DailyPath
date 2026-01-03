@@ -1,0 +1,166 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>Logowanie - DailyPath</title>
+  </head>
+  <body class="min-h-screen bg-background">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-md space-y-8">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold tracking-tight">DailyPath</h1>
+          <p class="mt-2 text-muted-foreground">Zaloguj się do swojego konta</p>
+        </div>
+
+        <div class="rounded-lg border bg-card p-8 shadow-sm">
+          <form id="login-form" class="space-y-6">
+            <div class="space-y-2">
+              <label for="email" class="text-sm font-medium">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="twoj.email@example.com"
+                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="password" class="text-sm font-medium">
+                Hasło
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="••••••••"
+                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div id="error-message" class="hidden rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            </div>
+
+            <button
+              type="submit"
+              class="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+              Zaloguj się
+            </button>
+          </form>
+
+
+          <div class="mt-4 border-t pt-4 text-center text-sm text-muted-foreground">
+            <p class="mb-2">Dane testowe:</p>
+            <p class="font-mono text-xs">admin@test.com / test123test</p>
+            <p class="font-mono text-xs">employee1@test.com / test123test</p>
+          </div>
+        </div>
+
+        <div class="text-center text-sm text-muted-foreground">
+          <a href="/" class="hover:text-foreground">← Powrót do strony głównej</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { createBrowserClient } from '@supabase/ssr';
+
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+
+      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+
+      const form = document.getElementById('login-form') as HTMLFormElement;
+      const errorDiv = document.getElementById('error-message') as HTMLDivElement;
+      const submitButton = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+      console.log('Login page loaded, Supabase URL:', supabaseUrl);
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        console.log('Form submitted!');
+
+        const formData = new FormData(form);
+        const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
+
+        console.log('Attempting login for:', email);
+
+        // Hide previous errors
+        errorDiv.classList.add('hidden');
+
+        // Disable button
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Logowanie...';
+        }
+
+        try {
+          console.log('Calling signInWithPassword...');
+          
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          console.log('Login response:', { data, error });
+
+          if (error) {
+            console.error('Login error:', error);
+            errorDiv.textContent = error.message === 'Invalid login credentials' 
+              ? 'Nieprawidłowy email lub hasło. Upewnij się, że użytkownik istnieje w Supabase.'
+              : `Błąd: ${error.message}`;
+            errorDiv.classList.remove('hidden');
+            
+            if (submitButton) {
+              submitButton.disabled = false;
+              submitButton.textContent = 'Zaloguj się';
+            }
+            return;
+          }
+
+          if (data.session) {
+            console.log('Login successful! Session:', data.session);
+            console.log('Cookies should now be set. Redirecting...');
+            // Successfully logged in - redirect to dashboard
+            // Small delay to ensure cookies are set
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 100);
+          } else {
+            console.warn('No session returned');
+            errorDiv.textContent = 'Brak sesji. Spróbuj ponownie.';
+            errorDiv.classList.remove('hidden');
+            
+            if (submitButton) {
+              submitButton.disabled = false;
+              submitButton.textContent = 'Zaloguj się';
+            }
+          }
+        } catch (err) {
+          console.error('Unexpected login error:', err);
+          errorDiv.textContent = 'Wystąpił błąd podczas logowania. Sprawdź czy Supabase jest uruchomiony (npx supabase start).';
+          errorDiv.classList.remove('hidden');
+          
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Zaloguj się';
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
+

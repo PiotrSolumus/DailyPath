@@ -1,0 +1,29 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { TeamViewWrapper } from "../components/team/TeamViewWrapper";
+
+// Get user from middleware (can be null if not logged in)
+const user = Astro.locals.user;
+---
+
+<AppLayout title="Zespół - DailyPath" user={user}>
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Zespół</h1>
+      <p class="text-muted-foreground">Podgląd i zarządzanie zespołem</p>
+    </div>
+
+    <TeamViewWrapper
+      client:load
+      departmentId={user.active_department?.id ?? ""}
+      onViewMemberPlan={(memberId: string, memberName: string) => {
+        // This will be handled by React state in a full implementation
+        console.log("View plan for:", memberId, memberName);
+      }}
+      initialUser={user}
+    />
+
+    <!-- Modal for member plan will be managed by React state in production -->
+  </div>
+</AppLayout>
+
