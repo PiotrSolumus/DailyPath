@@ -50,8 +50,8 @@ export function ReportView({ initialFilters = {} }: ReportViewProps) {
       const flatData = flattenForCSV(
         reportData.map((r) => ({
           data: r.date,
-          uzytkownik: r.user_id ?? "Wszyscy",
-          dzial: r.department_id ?? "Wszystkie",
+          uzytkownik: r.user_name ?? r.user_id ?? "Wszyscy",
+          dzial: r.department_name ?? r.department_id ?? "Wszystkie",
           zarejestrowany_czas_minuty: r.logged_minutes,
           zaplanowany_czas_minuty: r.plan_minutes,
           zadania: r.task_summary.map((ts) => `${ts.status}: ${ts.count}`).join("; "),

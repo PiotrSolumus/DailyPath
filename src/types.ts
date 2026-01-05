@@ -46,6 +46,7 @@ export interface UserWorkingHoursDTO {
 export interface TaskDTO extends Omit<Tables<"tasks">, "created_at" | "updated_at"> {
   /** Dynamic ETA calculated by summing planned slots */
   eta: string | null;
+  assigned_by_user_name?: string | null;
 }
 
 /**
@@ -142,7 +143,9 @@ export interface UpdateTimeLogCommand {
 export interface DailyReportDTO {
   date: string;
   user_id?: string;
+  user_name?: string;
   department_id?: string;
+  department_name?: string | null;
   logged_minutes: number;
   plan_minutes: number;
   task_summary: {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PlanCalendar } from "../calendar/PlanCalendar";
@@ -24,17 +24,22 @@ async function fetchPlanSlots(userId: string, startDate: string, endDate: string
   const response = await fetch(`/api/plan-slots?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch plan slots");
+    const text = await response.text().catch(() => "");
+    throw new Error(text || "Failed to fetch plan slots");
   }
 
   return response.json();
 }
 
-async function fetchTasks(): Promise<TaskDTO[]> {
-  const response = await fetch("/api/tasks");
+async function fetchTasksByIds(ids: string[]): Promise<TaskDTO[]> {
+  if (ids.length === 0) return [];
+
+  const params = new URLSearchParams({ ids: ids.join(",") });
+  const response = await fetch(`/api/tasks/by-ids?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch tasks");
+    const text = await response.text().catch(() => "");
+    throw new Error(text || "Failed to fetch tasks by ids");
   }
 
   return response.json();
@@ -57,22 +62,38 @@ async function updatePlanSlot(slotId: string, newStartTime: Date, duration: numb
 }
 
 export function PlanView({ userId, timezone, isManagerView = false }: PlanViewProps) {
-  const [currentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState<PlanSlotDTO | null>(null);
   const queryClient = useQueryClient();
 
-  // Fetch plan slots for current week
-  const startDate = formatDateForApi(new Date(currentDate.getTime() - 3 * 24 * 60 * 60 * 1000));
-  const endDate = formatDateForApi(new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000));
+  // Fetch plan slots for current week (wider range to support navigation)
+  const startDate = formatDateForApi(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+  const endDate = formatDateForApi(new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000));
 
-  const { data: planSlots, isLoading: planLoading } = useQuery({
+  const {
+    data: planSlots,
+    isLoading: planLoading,
+    isError: planIsError,
+    error: planError,
+  } = useQuery({
     queryKey: ["plan-slots", userId, startDate, endDate],
     queryFn: () => fetchPlanSlots(userId, startDate, endDate),
   });
 
-  const { data: tasks, isLoading: tasksLoading } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: fetchTasks,
+  const taskIds = useMemo(() => {
+    const ids = (planSlots ?? []).map((s) => s.task_id);
+    return Array.from(new Set(ids)).sort();
+  }, [planSlots]);
+
+  const {
+    data: tasks,
+    isLoading: tasksLoading,
+    isError: tasksIsError,
+    error: tasksError,
+  } = useQuery({
+    queryKey: ["tasks-by-ids", taskIds],
+    queryFn: () => fetchTasksByIds(taskIds),
+    enabled: taskIds.length > 0,
   });
 
   const moveMutation = useMutation({
@@ -114,14 +135,35 @@ export function PlanView({ userId, timezone, isManagerView = false }: PlanViewPr
     );
   }
 
+  if (planIsError || tasksIsError) {
+    const message = planIsError ? getErrorMessage(planError) : getErrorMessage(tasksError);
+    return (
+      <div className="rounded-lg border bg-card p-4 text-sm">
+        <div className="font-medium">Nie udało się wczytać planu dnia</div>
+        <div className="mt-1 text-muted-foreground">{message}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr,300px]">
       <div>
+        {(planSlots?.length ?? 0) === 0 && (
+          <div className="mb-4 rounded-lg border bg-card p-4 text-sm text-muted-foreground">
+            Brak zaplanowanych slotów na ten zakres dat. Dodaj zadanie do planu z widoku{" "}
+            <a href="/tasks" className="underline underline-offset-4 hover:text-foreground">
+              Zadania
+            </a>
+            .
+          </div>
+        )}
         <PlanCalendar
+          initialDate={currentDate}
           planSlots={planSlots ?? []}
           tasks={tasks ?? []}
           timezone={timezone}
           onSlotMove={handleSlotMove}
+          onDateChange={setCurrentDate}
           isManagerView={isManagerView}
         />
       </div>

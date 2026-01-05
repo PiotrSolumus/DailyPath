@@ -13,6 +13,7 @@ interface TaskSlotProps {
   isDragging?: boolean;
   onDragStart?: () => void;
   onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
 const priorityColors: Record<string, string> = {
@@ -30,6 +31,7 @@ export function TaskSlot({
   isDragging,
   onDragStart,
   onClick,
+  style,
 }: TaskSlotProps) {
   const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
   const isShort = durationMinutes <= 30;
@@ -43,6 +45,7 @@ export function TaskSlot({
         isDragging && "opacity-50",
         onClick && "cursor-pointer hover:shadow-md",
       )}
+      style={style}
       onClick={onClick}
       title={`${task.title}\n${task.description || ""}\nEstymacja: ${task.estimate_minutes}min`}
     >

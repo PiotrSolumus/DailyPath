@@ -1,11 +1,11 @@
 -- Seed data for testing GET /api/tasks endpoint
 -- This script creates test users, departments, tasks, and plan_slots
 
--- Note: In Supabase local dev, auth.users must be created via Auth API
--- This seed focuses on public schema tables that reference auth.users
+-- ⚠️ TEMPORARY: Auth is disabled, creating users directly in public.users
+-- This seed now creates test users WITHOUT auth.users entries
 
 -- ============================================================================
--- 1. Test Users (assuming they exist in auth.users)
+-- 1. Test Users (created directly in public.users)
 -- ============================================================================
 -- We'll use these UUIDs in our seed data:
 -- Admin: 00000000-0000-0000-0000-000000000001
@@ -15,12 +15,15 @@
 -- Employee2: 00000000-0000-0000-0000-000000000005
 -- Employee3: 00000000-0000-0000-0000-000000000006
 
--- NOTE: Users must be created via scripts/create-test-users.js FIRST
--- That script creates users in both auth.users and public.users
--- This seed.sql file only creates departments, tasks, and other data that depends on users existing
-
--- Verify users exist (optional check)
--- If this fails, run: node scripts/create-test-users.js
+-- Create test users directly in public.users (bypassing auth.users)
+INSERT INTO public.users (id, email, full_name, app_role, timezone, is_active) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'admin@test.com', 'Admin User', 'admin', 'UTC', true),
+  ('00000000-0000-0000-0000-000000000002', 'manager1@test.com', 'Manager One', 'manager', 'UTC', true),
+  ('00000000-0000-0000-0000-000000000003', 'manager2@test.com', 'Manager Two', 'manager', 'UTC', true),
+  ('00000000-0000-0000-0000-000000000004', 'employee1@test.com', 'Employee One', 'employee', 'UTC', true),
+  ('00000000-0000-0000-0000-000000000005', 'employee2@test.com', 'Employee Two', 'employee', 'UTC', true),
+  ('00000000-0000-0000-0000-000000000006', 'employee3@test.com', 'Employee Three', 'employee', 'UTC', true)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- 2. Departments

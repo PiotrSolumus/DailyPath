@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import type { PostgrestError } from "@supabase/supabase-js";
+import { HttpError } from "@/lib/utils/http-error";
 
 /**
  * Standard error response interface
@@ -19,6 +20,22 @@ export interface ErrorResponse {
  * @returns Response object with appropriate status code and error message
  */
 export function handleApiError(error: unknown): Response {
+  // Handle explicit HTTP errors (e.g., authorization/forbidden)
+  if (error instanceof HttpError) {
+    return new Response(
+      JSON.stringify({
+        error: error.error,
+        message: error.message,
+        details: error.details,
+        code: error.code,
+      } as ErrorResponse),
+      {
+        status: error.status,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   // Handle Zod validation errors
   if (error instanceof ZodError) {
     return new Response(
@@ -40,7 +57,7 @@ export function handleApiError(error: unknown): Response {
     return new Response(
       JSON.stringify({
         error: "Database error",
-        message: "Failed to fetch tasks",
+        message: error.message || "A database error occurred",
         code: error.code,
       } as ErrorResponse),
       {

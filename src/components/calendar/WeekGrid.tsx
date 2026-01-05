@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { addDays, format } from "date-fns";
 import { pl } from "date-fns/locale";
-import { getWeekBoundaries, getDaySlots } from "../../lib/utils/time";
+import { getWeekBoundaries, getDaySlotsInTimeZone } from "../../lib/utils/time";
 import { TimeSlot } from "./TimeSlot";
 import { cn } from "../../lib/utils";
 
@@ -14,7 +14,7 @@ interface WeekGridProps {
 export function WeekGrid({ date, timezone, children }: WeekGridProps) {
   const { start: weekStart } = useMemo(() => getWeekBoundaries(date), [date]);
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
-  const timeSlots = useMemo(() => getDaySlots(weekStart), [weekStart]);
+  const timeSlots = useMemo(() => getDaySlotsInTimeZone(weekStart, timezone), [weekStart, timezone]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -65,7 +65,7 @@ export function WeekGrid({ date, timezone, children }: WeekGridProps) {
 
         {/* Day columns */}
         {weekDays.map((day) => {
-          const daySlots = getDaySlots(day);
+          const daySlots = getDaySlotsInTimeZone(day, timezone);
           const isToday = day.getTime() === today.getTime();
 
           return (

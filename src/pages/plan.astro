@@ -14,12 +14,17 @@ const user = Astro.locals.user;
     </div>
 
     {user ? (
-      <PlanViewWrapper client:load userId={user.id} timezone={user.timezone} initialUser={user} />
+      <PlanViewWrapper client:load userId={user.id} timezone={user.timezone ?? "UTC"} initialUser={user}>
+        <div class="flex items-center justify-center py-12" aria-busy="true" aria-live="polite">
+          <div class="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+          <span class="sr-only">Ładowanie planu dnia…</span>
+        </div>
+      </PlanViewWrapper>
     ) : (
       <div class="rounded-lg border bg-card p-6 text-center">
-        <p class="text-muted-foreground">Zaloguj się, aby zobaczyć swój plan dnia</p>
+        <p class="text-muted-foreground">⚠️ Tryb testowy: wybierz użytkownika, aby zobaczyć plan dnia</p>
         <a href="/login" class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-          Zaloguj się
+          Wybierz użytkownika
         </a>
       </div>
     )}

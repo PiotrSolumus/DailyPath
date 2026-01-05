@@ -35,8 +35,18 @@ export async function listTasks(
   filters: TaskQueryParams
 ): Promise<TaskDTO[]> {
   try {
-    // Build base query
-    let query = supabase.from("tasks").select("*");
+    // Build base query with join for assigned_by user (name/email)
+    let query = supabase
+      .from("tasks")
+      .select(
+        `
+          *,
+          assigned_by:users!tasks_assigned_by_user_id_fkey (
+            full_name,
+            email
+          )
+        `,
+      );
 
     // Apply filters
     if (filters.status) {
@@ -103,6 +113,7 @@ export async function listTasks(
         assigned_user_id: task.assigned_user_id,
         assigned_department_id: task.assigned_department_id,
         assigned_by_user_id: task.assigned_by_user_id,
+        assigned_by_user_name: task.assigned_by?.full_name ?? task.assigned_by?.email ?? null,
         created_by_user_id: task.created_by_user_id,
         is_private: task.is_private,
         eta,
@@ -112,6 +123,61 @@ export async function listTasks(
     return taskDTOs;
   } catch (error) {
     console.error("Error in listTasks service:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch tasks by explicit IDs.
+ * Used by calendar views to guarantee tasks referenced by plan slots are present
+ * even when the general list is paginated/filtered.
+ */
+export async function getTasksByIds(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  userRole: string,
+  ids: string[]
+): Promise<TaskDTO[]> {
+  try {
+    if (ids.length === 0) return [];
+
+    const { data: tasks, error } = await supabase.from("tasks").select("*").in("id", ids);
+
+    if (error) {
+      console.error("Error fetching tasks by ids:", error);
+      throw error;
+    }
+
+    if (!tasks || tasks.length === 0) {
+      return [];
+    }
+
+    const etaMap = await batchCalculateETA(supabase, tasks.map((t) => t.id));
+
+    const hasPrivateTasks = tasks.some((t) => t.is_private);
+    const managerDepartments =
+      hasPrivateTasks && (userRole === "manager" || userRole === "admin")
+        ? await getManagerDepartments(supabase, userId)
+        : new Set<string>();
+
+    return tasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      description: applyPrivacyMask(task, userId, userRole, managerDepartments),
+      priority: task.priority,
+      status: task.status,
+      estimate_minutes: task.estimate_minutes,
+      due_date: task.due_date,
+      assigned_to_type: task.assigned_to_type,
+      assigned_user_id: task.assigned_user_id,
+      assigned_department_id: task.assigned_department_id,
+      assigned_by_user_id: task.assigned_by_user_id,
+      created_by_user_id: task.created_by_user_id,
+      is_private: task.is_private,
+      eta: etaMap.get(task.id) ?? null,
+    }));
+  } catch (error) {
+    console.error("Error in getTasksByIds service:", error);
     throw error;
   }
 }
@@ -275,6 +341,87 @@ export async function createTask(
     return task.id;
   } catch (error) {
     console.error("Error in createTask service:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update an existing task
+ *
+ * @param supabase - Supabase client instance
+ * @param taskId - Task ID to update
+ * @param data - Task update data (partial)
+ * @returns void
+ */
+export async function updateTask(
+  supabase: SupabaseClient<Database>,
+  taskId: string,
+  data: UpdateTaskCommand
+): Promise<void> {
+  try {
+    // Fetch current assignment to detect changes
+    const { data: currentTask, error: fetchError } = await supabase
+      .from("tasks")
+      .select("assigned_to_type, assigned_user_id")
+      .eq("id", taskId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching current task before update:", fetchError);
+      throw fetchError;
+    }
+
+    if (!currentTask) {
+      throw new Error("Task not found");
+    }
+
+    const previousAssignee = currentTask.assigned_to_type === "user" ? currentTask.assigned_user_id : null;
+    const nextAssignedToType = data.assigned_to_type ?? currentTask.assigned_to_type;
+    const nextAssignee = nextAssignedToType === "user"
+      ? data.assigned_user_id ?? currentTask.assigned_user_id
+      : null;
+
+    // Prepare update data
+    const updateData: Database["public"]["Tables"]["tasks"]["Update"] = {
+      ...data,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update task
+    const { error } = await supabase
+      .from("tasks")
+      .update(updateData)
+      .eq("id", taskId);
+
+    if (error) {
+      console.error("Error updating task:", error);
+      throw error;
+    }
+
+    // Keep plan slots in sync with task assignment
+    if (previousAssignee !== nextAssignee) {
+      if (nextAssignee) {
+        const { error: reassignError } = await supabase
+          .from("plan_slots")
+          .update({ user_id: nextAssignee })
+          .eq("task_id", taskId);
+
+        if (reassignError) {
+          console.error("Error reassigning plan slots to new user:", reassignError);
+          throw reassignError;
+        }
+      } else {
+        // No direct assignee anymore (e.g., assigned to department) — remove user-specific plan slots
+        const { error: deleteError } = await supabase.from("plan_slots").delete().eq("task_id", taskId);
+
+        if (deleteError) {
+          console.error("Error removing plan slots after unassigning task:", deleteError);
+          throw deleteError;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error in updateTask service:", error);
     throw error;
   }
 }

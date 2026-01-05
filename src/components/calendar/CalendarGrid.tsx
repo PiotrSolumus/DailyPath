@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getDaySlots } from "../../lib/utils/time";
+import { getDaySlotsInTimeZone } from "../../lib/utils/time";
 import { TimeSlot } from "./TimeSlot";
 
 interface CalendarGridProps {
@@ -9,13 +9,13 @@ interface CalendarGridProps {
 }
 
 export function CalendarGrid({ date, timezone, children }: CalendarGridProps) {
-  const timeSlots = useMemo(() => getDaySlots(date), [date]);
+  const timeSlots = useMemo(() => getDaySlotsInTimeZone(date, timezone), [date, timezone]);
+  const totalSlots = timeSlots.length;
 
   return (
-    <div className="relative">
+    <div className="relative flex">
       {/* Time column */}
-      <div className="sticky left-0 z-10 w-20 bg-background">
-        <div className="h-12" /> {/* Header spacer */}
+      <div className="sticky left-0 z-10 w-20 flex-shrink-0 bg-background">
         {timeSlots.map((slot, index) => {
           const isHourStart = slot.getMinutes() === 0;
           if (!isHourStart) return null;
@@ -29,8 +29,8 @@ export function CalendarGrid({ date, timezone, children }: CalendarGridProps) {
       </div>
 
       {/* Calendar grid */}
-      <div className="ml-20">
-        <div className="grid" style={{ gridTemplateRows: "repeat(96, minmax(40px, 1fr))" }}>
+      <div className="relative flex-1">
+        <div className="grid" style={{ gridTemplateRows: `repeat(${totalSlots}, minmax(40px, 1fr))` }}>
           {timeSlots.map((slot, index) => {
             const isHourStart = slot.getMinutes() === 0;
 
@@ -46,7 +46,7 @@ export function CalendarGrid({ date, timezone, children }: CalendarGridProps) {
         </div>
 
         {/* Task slots overlay */}
-        <div className="absolute left-20 right-0 top-12">
+        <div className="absolute inset-0">
           {children}
         </div>
       </div>

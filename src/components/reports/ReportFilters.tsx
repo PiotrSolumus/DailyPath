@@ -1,9 +1,37 @@
 import { Download, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select } from "../ui/select";
 import { useReportFilters } from "../../lib/utils/query-params";
+
+interface DepartmentOption {
+  id: string;
+  name: string;
+}
+
+interface UserOption {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
+async function fetchDepartments(): Promise<DepartmentOption[]> {
+  const res = await fetch("/api/departments");
+  if (!res.ok) {
+    throw new Error("Nie udało się pobrać działów");
+  }
+  return res.json();
+}
+
+async function fetchUsers(): Promise<UserOption[]> {
+  const res = await fetch("/api/users");
+  if (!res.ok) {
+    throw new Error("Nie udało się pobrać użytkowników");
+  }
+  return res.json();
+}
 
 interface ReportFiltersProps {
   onExport: () => void;
@@ -12,6 +40,14 @@ interface ReportFiltersProps {
 
 export function ReportFilters({ onExport, isExporting }: ReportFiltersProps) {
   const { filters, setStartDate, setEndDate, setDepartmentId, setUserId, clearFilters } = useReportFilters();
+  const { data: departments, isLoading: depsLoading } = useQuery({
+    queryKey: ["report-departments"],
+    queryFn: fetchDepartments,
+  });
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ["report-users"],
+    queryFn: fetchUsers,
+  });
 
   return (
     <div className="space-y-4 rounded-lg border bg-card p-4">
@@ -62,9 +98,12 @@ export function ReportFilters({ onExport, isExporting }: ReportFiltersProps) {
               onChange={(e) => setDepartmentId(e.target.value || null)}
             >
               <option value="">Wszystkie</option>
-              <option value="dept-1">Engineering</option>
-              <option value="dept-2">Marketing</option>
-              <option value="dept-3">Sales</option>
+              {depsLoading && <option value="">Ładowanie...</option>}
+              {departments?.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
             </Select>
           </div>
 
@@ -77,8 +116,12 @@ export function ReportFilters({ onExport, isExporting }: ReportFiltersProps) {
               onChange={(e) => setUserId(e.target.value || null)}
             >
               <option value="">Wszyscy</option>
-              <option value="1">Jan Kowalski</option>
-              <option value="2">Anna Nowak</option>
+              {usersLoading && <option value="">Ładowanie...</option>}
+              {users?.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.full_name || user.email}
+                </option>
+              ))}
             </Select>
           </div>
         </div>

@@ -17,8 +17,8 @@ interface TimeLogsViewProps {
   };
 }
 
-async function fetchTasks(): Promise<TaskDTO[]> {
-  const response = await fetch("/api/tasks");
+async function fetchTimeLogTasks(): Promise<TaskDTO[]> {
+  const response = await fetch("/api/time-logs/tasks");
 
   if (!response.ok) {
     throw new Error("Failed to fetch tasks");
@@ -50,8 +50,8 @@ export function TimeLogsView({ initialFilters }: TimeLogsViewProps) {
 
   // Fetch available tasks for the create form
   const { data: tasks = [] } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: fetchTasks,
+    queryKey: ["time-logs-tasks"],
+    queryFn: fetchTimeLogTasks,
   });
 
   // Delete mutation

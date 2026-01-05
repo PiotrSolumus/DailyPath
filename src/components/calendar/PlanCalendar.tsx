@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { CalendarControls } from "./CalendarControls";
 import { CalendarGrid } from "./CalendarGrid";
 import { WeekGrid } from "./WeekGrid";
 import { DraggableTaskSlot } from "./DraggableTaskSlot";
-import { navigateDay, navigateWeek, rangesOverlap, parsePgRange } from "../../lib/utils/time";
+import { WeekTaskSlot } from "./WeekTaskSlot";
+import { navigateDay, navigateWeek, rangesOverlap, parsePgRange, getWeekBoundaries } from "../../lib/utils/time";
+import { formatInTimeZone } from "date-fns-tz";
 import type { PlanSlotDTO, TaskDTO } from "../../types";
 import {
   AlertDialog,
@@ -23,6 +25,7 @@ interface PlanCalendarProps {
   tasks: TaskDTO[];
   timezone: string;
   onSlotMove?: (slotId: string, newStartTime: Date, allowOverlap: boolean) => Promise<void>;
+  onDateChange?: (date: Date) => void;
   isManagerView?: boolean;
 }
 
@@ -32,10 +35,22 @@ export function PlanCalendar({
   tasks,
   timezone,
   onSlotMove,
+  onDateChange,
   isManagerView = false,
 }: PlanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(initialDate);
   const [view, setView] = useState<"day" | "week">("day");
+
+  // Sync internal state when initialDate changes from parent
+  useEffect(() => {
+    setCurrentDate(initialDate);
+  }, [initialDate]);
+
+  // Update internal state when date changes
+  const handleDateChange = (newDate: Date) => {
+    setCurrentDate(newDate);
+    onDateChange?.(newDate);
+  };
   const [overlapDialog, setOverlapDialog] = useState<{
     open: boolean;
     slotId: string;
@@ -108,11 +123,12 @@ export function PlanCalendar({
   };
 
   const handleNavigate = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => (view === "day" ? navigateDay(prev, direction) : navigateWeek(prev, direction)));
+    const newDate = view === "day" ? navigateDay(currentDate, direction) : navigateWeek(currentDate, direction);
+    handleDateChange(newDate);
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    handleDateChange(new Date());
   };
 
   return (
@@ -123,6 +139,7 @@ export function PlanCalendar({
         onViewChange={setView}
         onNavigate={handleNavigate}
         onToday={handleToday}
+        onDateSelect={handleDateChange}
       />
 
       <div className="rounded-lg border bg-card">
@@ -131,17 +148,17 @@ export function PlanCalendar({
             <CalendarGrid date={currentDate} timezone={timezone}>
               {planSlots.map((slot) => {
                 const task = tasksById.get(slot.task_id);
-                if (!task) return null;
+                if (!task) {
+                  console.warn(`Task not found for slot ${slot.id}, task_id: ${slot.task_id}`);
+                  return null;
+                }
 
                 const { start, end } = parsePgRange(slot.period);
 
-                // Check if slot is in current day
-                const slotDate = new Date(start);
-                if (
-                  slotDate.getDate() !== currentDate.getDate() ||
-                  slotDate.getMonth() !== currentDate.getMonth() ||
-                  slotDate.getFullYear() !== currentDate.getFullYear()
-                ) {
+                // Check if slot is in current day (in user's timezone)
+                const slotDay = formatInTimeZone(start, timezone, "yyyy-MM-dd");
+                const currentDay = formatInTimeZone(currentDate, timezone, "yyyy-MM-dd");
+                if (slotDay !== currentDay) {
                   return null;
                 }
 
@@ -158,6 +175,7 @@ export function PlanCalendar({
                     task={task}
                     startTime={start}
                     endTime={end}
+                    timezone={timezone}
                     hasOverlap={hasOverlap}
                     createdByManager={isManagerView}
                   />
@@ -166,7 +184,42 @@ export function PlanCalendar({
             </CalendarGrid>
           ) : (
             <WeekGrid date={currentDate} timezone={timezone}>
-              {/* Week view task slots - similar logic */}
+              {planSlots.map((slot) => {
+                const task = tasksById.get(slot.task_id);
+                if (!task) {
+                  console.warn(`Task not found for slot ${slot.id}, task_id: ${slot.task_id}`);
+                  return null;
+                }
+
+                const { start, end } = parsePgRange(slot.period);
+
+                // Check if slot is in current week
+                const { start: weekStart, end: weekEnd } = getWeekBoundaries(currentDate);
+                
+                if (start < weekStart || start >= weekEnd) {
+                  return null;
+                }
+
+                const hasOverlap = planSlots.some((other) => {
+                  if (other.id === slot.id) return false;
+                  const { start: otherStart, end: otherEnd } = parsePgRange(other.period);
+                  return rangesOverlap({ start, end }, { start: otherStart, end: otherEnd });
+                });
+
+                return (
+                  <WeekTaskSlot
+                    key={slot.id}
+                    planSlot={slot}
+                    task={task}
+                    startTime={start}
+                    endTime={end}
+                    timezone={timezone}
+                    hasOverlap={hasOverlap}
+                    createdByManager={isManagerView}
+                    weekStartDate={currentDate}
+                  />
+                );
+              })}
             </WeekGrid>
           )}
         </DndContext>

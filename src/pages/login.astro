@@ -1,5 +1,17 @@
 ---
-import Layout from "../layouts/Layout.astro";
+// TEMPORARY: Simple user selection page (no real authentication)
+const supabaseAdmin = Astro.locals.supabaseAdmin;
+
+// Fetch all users
+const { data: users, error } = await supabaseAdmin
+  .from("users")
+  .select("id, email, full_name, app_role")
+  .order("app_role", { ascending: false })
+  .order("email", { ascending: true });
+
+if (error) {
+  console.error("Error fetching users:", error);
+}
 ---
 
 <!doctype html>
@@ -8,158 +20,80 @@ import Layout from "../layouts/Layout.astro";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>Logowanie - DailyPath</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+    <title>Wybór użytkownika - DailyPath</title>
   </head>
   <body class="min-h-screen bg-background">
     <div class="flex min-h-screen items-center justify-center p-4">
-      <div class="w-full max-w-md space-y-8">
+      <div class="w-full max-w-2xl space-y-8">
         <div class="text-center">
           <h1 class="text-3xl font-bold tracking-tight">DailyPath</h1>
-          <p class="mt-2 text-muted-foreground">Zaloguj się do swojego konta</p>
+          <p class="mt-2 text-muted-foreground">⚠️ Tryb testowy - wybierz użytkownika</p>
         </div>
 
         <div class="rounded-lg border bg-card p-8 shadow-sm">
-          <form id="login-form" class="space-y-6">
-            <div class="space-y-2">
-              <label for="email" class="text-sm font-medium">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                placeholder="twoj.email@example.com"
-                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div class="space-y-2">
-              <label for="password" class="text-sm font-medium">
-                Hasło
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                required
-                placeholder="••••••••"
-                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div id="error-message" class="hidden rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            </div>
-
-            <button
-              type="submit"
-              class="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              Zaloguj się
-            </button>
-          </form>
-
-
-          <div class="mt-4 border-t pt-4 text-center text-sm text-muted-foreground">
-            <p class="mb-2">Dane testowe:</p>
-            <p class="font-mono text-xs">admin@test.com / test123test</p>
-            <p class="font-mono text-xs">employee1@test.com / test123test</p>
+          <div class="mb-6 rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4 text-sm">
+            <p class="font-semibold text-yellow-800 dark:text-yellow-200">Uwaga: Autentykacja wyłączona</p>
+            <p class="mt-1 text-yellow-700 dark:text-yellow-300">
+              Wybierz użytkownika z listy, aby testować aplikację. Możesz też dodać nowych użytkowników w panelu Admin.
+            </p>
           </div>
+
+          {users && users.length > 0 ? (
+            <div class="space-y-3">
+              <h2 class="text-lg font-semibold mb-4">Dostępni użytkownicy:</h2>
+              {users.map((user) => (
+                <button
+                  type="button"
+                  class="w-full text-left rounded-lg border bg-background p-4 hover:bg-accent hover:border-primary transition-colors"
+                  data-user-id={user.id}
+                  onclick={`selectUser('${user.id}')`}
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-medium">{user.full_name}</p>
+                      <p class="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                    <span class={`px-3 py-1 rounded-full text-xs font-medium ${
+                      user.app_role === 'admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                      user.app_role === 'manager' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                    }`}>
+                      {user.app_role}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div class="text-center py-8">
+              <p class="text-muted-foreground">Brak użytkowników w bazie danych.</p>
+              <p class="text-sm text-muted-foreground mt-2">Uruchom skrypt seed-database.js aby utworzyć testowych użytkowników.</p>
+            </div>
+          )}
         </div>
 
         <div class="text-center text-sm text-muted-foreground">
-          <a href="/" class="hover:text-foreground">← Powrót do strony głównej</a>
+          <p>Aby dodać użytkowników, zaloguj się jako admin lub uruchom:</p>
+          <code class="block mt-2 bg-muted px-4 py-2 rounded">node scripts/seed-database.js</code>
         </div>
       </div>
     </div>
 
     <script>
-      import { createBrowserClient } from '@supabase/ssr';
+      // @ts-nocheck
+      function selectUser(userId: string) {
+        // Set cookie with user ID
+        document.cookie = `temp_user_id=${userId}; path=/; max-age=86400`; // 24 hours
+        
+        console.log('🔓 Selected user:', userId);
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      }
 
-      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
-      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-
-      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
-
-      const form = document.getElementById('login-form') as HTMLFormElement;
-      const errorDiv = document.getElementById('error-message') as HTMLDivElement;
-      const submitButton = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
-
-      console.log('Login page loaded, Supabase URL:', supabaseUrl);
-
-      form?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        console.log('Form submitted!');
-
-        const formData = new FormData(form);
-        const email = formData.get('email') as string;
-        const password = formData.get('password') as string;
-
-        console.log('Attempting login for:', email);
-
-        // Hide previous errors
-        errorDiv.classList.add('hidden');
-
-        // Disable button
-        if (submitButton) {
-          submitButton.disabled = true;
-          submitButton.textContent = 'Logowanie...';
-        }
-
-        try {
-          console.log('Calling signInWithPassword...');
-          
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          console.log('Login response:', { data, error });
-
-          if (error) {
-            console.error('Login error:', error);
-            errorDiv.textContent = error.message === 'Invalid login credentials' 
-              ? 'Nieprawidłowy email lub hasło. Upewnij się, że użytkownik istnieje w Supabase.'
-              : `Błąd: ${error.message}`;
-            errorDiv.classList.remove('hidden');
-            
-            if (submitButton) {
-              submitButton.disabled = false;
-              submitButton.textContent = 'Zaloguj się';
-            }
-            return;
-          }
-
-          if (data.session) {
-            console.log('Login successful! Session:', data.session);
-            console.log('Cookies should now be set. Redirecting...');
-            // Successfully logged in - redirect to dashboard
-            // Small delay to ensure cookies are set
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 100);
-          } else {
-            console.warn('No session returned');
-            errorDiv.textContent = 'Brak sesji. Spróbuj ponownie.';
-            errorDiv.classList.remove('hidden');
-            
-            if (submitButton) {
-              submitButton.disabled = false;
-              submitButton.textContent = 'Zaloguj się';
-            }
-          }
-        } catch (err) {
-          console.error('Unexpected login error:', err);
-          errorDiv.textContent = 'Wystąpił błąd podczas logowania. Sprawdź czy Supabase jest uruchomiony (npx supabase start).';
-          errorDiv.classList.remove('hidden');
-          
-          if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Zaloguj się';
-          }
-        }
-      });
+      // Make function available globally
+      (window as any).selectUser = selectUser;
     </script>
   </body>
 </html>

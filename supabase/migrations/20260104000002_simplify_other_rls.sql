@@ -95,3 +95,5 @@ create policy task_assignments_select_scope on public.task_assignments
     or auth.role() = 'service_role'
   );
 
+
+

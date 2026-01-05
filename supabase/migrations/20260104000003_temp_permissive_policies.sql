@@ -14,3 +14,5 @@ create policy tasks_all_authenticated on public.tasks
   using (true)
   with check (true);
 
+
+

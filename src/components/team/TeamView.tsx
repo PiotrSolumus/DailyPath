@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { TeamMemberCard } from "./TeamMemberCard";
+import { MemberPlanModal } from "./MemberPlanModal";
 import { Input } from "../ui/input";
 import { Spinner } from "../ui/spinner";
+import { useAuth } from "../../lib/contexts/AuthContext";
 
 interface TeamMember {
   id: string;
@@ -48,6 +50,8 @@ async function fetchTeamMembers(departmentId: string): Promise<TeamMember[]> {
 export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewStartTime] = useState(performance.now());
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const { user } = useAuth();
 
   const { data: members, isLoading } = useQuery({
     queryKey: ["team-members", departmentId],
@@ -80,6 +84,9 @@ export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
 
     const planViewStartTime = performance.now();
 
+    // Open the modal
+    setSelectedMember({ id: memberId, name: member.full_name });
+
     // Track specific member plan view time
     onViewMemberPlan(memberId, member.full_name);
 
@@ -101,6 +108,10 @@ export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
     }, 100);
   };
 
+  const handleCloseModal = () => {
+    setSelectedMember(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -116,33 +127,46 @@ export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Szukaj członka zespołu..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+    <>
+      <div className="space-y-6">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Szukaj członka zespołu..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Team grid */}
+        {filteredMembers && filteredMembers.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredMembers.map((member) => (
+              <TeamMemberCard key={member.id} member={member} onViewPlan={handleViewPlan} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border bg-muted p-12 text-center">
+            <p className="text-muted-foreground">
+              {searchTerm ? "Nie znaleziono członków zespołu" : "Brak członków zespołu"}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Team grid */}
-      {filteredMembers && filteredMembers.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredMembers.map((member) => (
-            <TeamMemberCard key={member.id} member={member} onViewPlan={handleViewPlan} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border bg-muted p-12 text-center">
-          <p className="text-muted-foreground">
-            {searchTerm ? "Nie znaleziono członków zespołu" : "Brak członków zespołu"}
-          </p>
-        </div>
+      {/* Member Plan Modal */}
+      {selectedMember && (
+        <MemberPlanModal
+          open={!!selectedMember}
+          memberId={selectedMember.id}
+          memberName={selectedMember.name}
+          timezone={user?.timezone ?? "UTC"}
+          onClose={handleCloseModal}
+        />
       )}
-    </div>
+    </>
   );
 }
 

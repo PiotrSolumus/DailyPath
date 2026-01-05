@@ -13,17 +13,24 @@ const user = Astro.locals.user;
       <p class="text-muted-foreground">Podgląd i zarządzanie zespołem</p>
     </div>
 
-    <TeamViewWrapper
-      client:load
-      departmentId={user.active_department?.id ?? ""}
-      onViewMemberPlan={(memberId: string, memberName: string) => {
-        // This will be handled by React state in a full implementation
-        console.log("View plan for:", memberId, memberName);
-      }}
-      initialUser={user}
-    />
-
-    <!-- Modal for member plan will be managed by React state in production -->
+    {user ? (
+      <TeamViewWrapper
+        client:load
+        departmentId={user.active_department?.id ?? ""}
+        onViewMemberPlan={(memberId: string, memberName: string) => {
+          // Analytics callback - modal is handled internally by React
+          console.log("View plan for:", memberId, memberName);
+        }}
+        initialUser={user}
+      />
+    ) : (
+      <div class="rounded-lg border bg-card p-6 text-center">
+        <p class="text-muted-foreground">⚠️ Tryb testowy: wybierz użytkownika, aby zobaczyć zespół</p>
+        <a href="/login" class="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+          Wybierz użytkownika
+        </a>
+      </div>
+    )}
   </div>
 </AppLayout>
 

@@ -1,18 +1,33 @@
 import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks } from "date-fns";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 /**
  * Parse Postgres tstzrange string to Date objects
  * Format: "[2026-01-03T08:00:00Z, 2026-01-03T09:30:00Z)"
+ * Also handles formats with quotes: '["2026-01-03 08:00:00+00", "2026-01-03 09:30:00+00")'
  */
 export function parsePgRange(range: string): { start: Date; end: Date } {
-  const match = range.match(/\[([^,]+),\s*([^)]+)\)/);
-  if (!match) throw new Error(`Invalid range format: ${range}`);
+  // Regex that handles optional quotes and various separators
+  const match = range.match(/[\[\(]"?([^",]+)"?,\s*"?([^"\)]+)"?[\)\]]/);
+  
+  if (!match) {
+    console.error(`Invalid range format: ${range}`);
+    throw new Error(`Invalid range format: ${range}`);
+  }
 
-  return {
-    start: parseISO(match[1]),
-    end: parseISO(match[2]),
-  };
+  // Normalize by replacing spaces with T if needed and trimming quotes
+  const startStr = match[1].trim().replace(" ", "T");
+  const endStr = match[2].trim().replace(" ", "T");
+
+  const start = parseISO(startStr);
+  const end = parseISO(endStr);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    console.error(`Invalid dates in range: ${range} -> ${startStr}, ${endStr}`);
+    throw new Error(`Invalid dates in range: ${range}`);
+  }
+
+  return { start, end };
 }
 
 /**
@@ -50,15 +65,40 @@ export function roundTo15Min(date: Date): Date {
 /**
  * Get time slots for a day in 15-minute intervals
  */
-export function getDaySlots(date: Date): Date[] {
+export function getDaySlots(date: Date, startHour: number = 6, endHour: number = 22): Date[] {
   const slots: Date[] = [];
   const start = startOfDay(date);
-
-  for (let i = 0; i < 96; i++) {
-    // 24 hours * 4 slots per hour
+  
+  // Calculate number of 15-minute slots between startHour and endHour
+  const totalSlots = (endHour - startHour) * 4;
+  
+  for (let i = 0; i < totalSlots; i++) {
     const slot = new Date(start);
+    slot.setHours(startHour);
     slot.setMinutes(i * 15);
     slots.push(slot);
+  }
+
+  return slots;
+}
+
+/**
+ * Get time slots for a day in 15-minute intervals, generated in a specific timezone.
+ *
+ * This avoids hour shifts when the user's `timezone` differs from the browser/system timezone.
+ */
+export function getDaySlotsInTimeZone(date: Date, timezone: string, startHour: number = 6, endHour: number = 22): Date[] {
+  const slots: Date[] = [];
+
+  // Interpret `date` as a day in the provided timezone.
+  const day = formatInTimeZone(date, timezone, "yyyy-MM-dd");
+  const totalSlots = (endHour - startHour) * 4;
+
+  for (let i = 0; i < totalSlots; i++) {
+    const hour = startHour + Math.floor(i / 4);
+    const minute = (i % 4) * 15;
+    const localIso = `${day}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+    slots.push(fromZonedTime(localIso, timezone));
   }
 
   return slots;
@@ -69,6 +109,36 @@ export function getDaySlots(date: Date): Date[] {
  */
 export function formatTimeSlot(date: Date, timezone: string): string {
   return formatInTimeZone(date, timezone, "HH:mm");
+}
+
+/**
+ * Calculate position and height for a task slot in the calendar grid
+ * @param startTime - Task start time
+ * @param endTime - Task end time
+ * @param gridStartHour - Hour when grid starts (default 6)
+ * @param slotHeightPx - Height of each 15-min slot in pixels (default 40)
+ * @returns Object with top position and height in pixels
+ */
+export function calculateSlotPosition(
+  startTime: Date,
+  endTime: Date,
+  gridStartHour: number = 6,
+  slotHeightPx: number = 40,
+  timezone?: string
+): { top: number; height: number } {
+  // Calculate slot index from start of grid using the provided timezone
+  const startHour = timezone ? Number(formatInTimeZone(startTime, timezone, "H")) : startTime.getHours();
+  const startMinute = timezone ? Number(formatInTimeZone(startTime, timezone, "m")) : startTime.getMinutes();
+  const startSlotIndex = (startHour - gridStartHour) * 4 + startMinute / 15;
+  
+  // Calculate duration in 15-minute slots
+  const durationMs = endTime.getTime() - startTime.getTime();
+  const durationSlots = durationMs / (15 * 60 * 1000);
+  
+  return {
+    top: startSlotIndex * slotHeightPx,
+    height: durationSlots * slotHeightPx,
+  };
 }
 
 /**

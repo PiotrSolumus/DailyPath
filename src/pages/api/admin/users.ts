@@ -6,7 +6,7 @@ export const prerender = false;
 const createUserSchema = z.object({
   email: z.string().email("Nieprawidłowy format adresu email"),
   full_name: z.string().min(1, "Imię i nazwisko jest wymagane"),
-  password: z.string().min(10, "Hasło musi mieć co najmniej 10 znaków"),
+  password: z.string().min(10, "Hasło musi mieć co najmniej 10 znaków"), // ⚠️ Not used temporarily
   app_role: z.enum(["employee", "manager", "admin"], {
     errorMap: () => ({ message: "Rola musi być: employee, manager lub admin" }),
   }),
@@ -16,6 +16,9 @@ const createUserSchema = z.object({
 /**
  * POST /api/admin/users
  * Create a new user (Admin only)
+ * 
+ * ⚠️ TEMPORARY: Auth creation is disabled - users are created directly in the database
+ * Users created this way will NOT be able to log in until Auth is enabled
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -65,78 +68,48 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { email, full_name, password, app_role, timezone } = validation.data;
 
-    // Create user in Supabase Auth using Admin API with service role key
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Auto-confirm email
-      user_metadata: {
-        full_name,
-      },
-    });
+    // TEMPORARY: Skip Auth creation, generate random UUID
+    // Generate a random UUID for the user
+    const userId = crypto.randomUUID();
 
-    if (authError) {
-      console.error("Error creating user in auth:", authError);
+    console.log("⚠️ TEMPORARY: Creating user without Auth -", email);
 
-      // Check for duplicate email
-      if (authError.message.includes("already registered") || authError.message.includes("already exists")) {
-        return new Response(
-          JSON.stringify({
-            error: "Conflict",
-            message: "Użytkownik z tym adresem email już istnieje",
-          }),
-          {
-            status: 409,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
+    // Check for duplicate email in users table (use admin client to bypass RLS)
+    const { data: existingUser } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .single();
 
+    if (existingUser) {
       return new Response(
         JSON.stringify({
-          error: "Auth error",
-          message: "Nie udało się utworzyć użytkownika w systemie uwierzytelniania",
-          details: authError.message,
+          error: "Conflict",
+          message: "Użytkownik z tym adresem email już istnieje",
         }),
         {
-          status: 500,
+          status: 409,
           headers: { "Content-Type": "application/json" },
         }
       );
     }
 
-    if (!authData.user) {
-      return new Response(
-        JSON.stringify({
-          error: "Auth error",
-          message: "Nie udało się utworzyć użytkownika",
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Create user profile in public.users table
-    const { data: profileData, error: profileError } = await supabase
+    // Create user profile in public.users table directly
+    // Use supabaseAdmin (service_role) to bypass foreign key constraint to auth.users
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from("users")
       .insert({
-        id: authData.user.id,
+        id: userId,
         email,
         full_name,
         app_role,
         timezone: timezone || "UTC",
-        is_active: true,
       })
       .select()
       .single();
 
     if (profileError) {
       console.error("Error creating user profile:", profileError);
-
-      // Try to delete the auth user if profile creation failed
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
 
       return new Response(
         JSON.stringify({
@@ -184,10 +157,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 /**
  * GET /api/admin/users
  * Get all users (Admin only)
+ * 
+ * ⚠️ Uses supabaseAdmin to bypass RLS since users may not have Auth accounts
  */
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    const supabase = locals.supabase;
+    const supabaseAdmin = locals.supabaseAdmin;
     const user = locals.user;
 
     // Check if user is authenticated
@@ -212,24 +187,12 @@ export const GET: APIRoute = async ({ locals }) => {
       );
     }
 
-    // Fetch all users with their active department
-    const { data, error } = await supabase
+    // Fetch all users (keep selection conservative to avoid schema mismatch across envs)
+    const { data, error } = await supabaseAdmin
       .from("users")
-      .select(
-        `
-        id,
-        email,
-        full_name,
-        app_role,
-        is_active,
-        active_department_id,
-        departments:active_department_id (
-          id,
-          name
-        )
-      `
-      )
-      .order("created_at", { ascending: false });
+      .select("id, email, full_name, app_role, is_active, timezone")
+      .order("app_role", { ascending: false })
+      .order("email", { ascending: true });
 
     if (error) {
       console.error("Error fetching users:", error);
@@ -245,20 +208,80 @@ export const GET: APIRoute = async ({ locals }) => {
       );
     }
 
-    // Transform data to match expected format
-    const users = data.map((user) => ({
-      id: user.id,
-      email: user.email,
-      full_name: user.full_name,
-      app_role: user.app_role,
-      is_active: user.is_active,
-      active_department: user.departments
-        ? {
-            id: user.departments.id,
-            name: user.departments.name,
-          }
-        : null,
-    }));
+    // Fetch memberships (will filter active ones in code)
+    const { data: memberships, error: membershipsError } = await supabaseAdmin
+      .from("memberships")
+      .select("user_id, department_id, period");
+
+    if (membershipsError) {
+      console.error("Error fetching memberships:", membershipsError);
+      return new Response(
+        JSON.stringify({
+          error: "Database error",
+          message: "Nie udało się pobrać przypisań użytkowników",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { data: departments, error: departmentsError } = await supabaseAdmin
+      .from("departments")
+      .select("id, name");
+
+    if (departmentsError) {
+      console.error("Error fetching departments for memberships:", departmentsError);
+      return new Response(
+        JSON.stringify({
+          error: "Database error",
+          message: "Nie udało się pobrać listy działów",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const membershipMap = new Map<string, string>();
+    memberships?.forEach((membership) => {
+      if (membership.user_id && membership.department_id) {
+        const period = membership.period as string;
+        // treat open-ended range as active (ends with ",)")
+        if (typeof period === "string" && period.endsWith(",)")) {
+          membershipMap.set(membership.user_id, membership.department_id);
+        }
+      }
+    });
+
+    const departmentMap = new Map<string, string>();
+    departments?.forEach((dept) => {
+      departmentMap.set(dept.id, dept.name);
+    });
+
+    // Transform data to match expected format (with active department)
+    const users = data.map((user) => {
+      const departmentId = membershipMap.get(user.id);
+      const departmentName = departmentId ? departmentMap.get(departmentId) : null;
+
+      return {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        app_role: user.app_role,
+        is_active: user.is_active,
+        timezone: user.timezone,
+        active_department:
+          departmentId && departmentName
+            ? {
+                id: departmentId,
+                name: departmentName,
+              }
+            : null,
+      };
+    });
 
     return new Response(JSON.stringify(users), {
       status: 200,

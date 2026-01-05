@@ -17,3 +17,5 @@ create policy memberships_select_scope on public.memberships
     or auth.role() = 'service_role'
   );
 
+
+

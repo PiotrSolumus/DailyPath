@@ -4,6 +4,20 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { CreateTaskForm } from "./CreateTaskForm";
 
+/**
+ * CreateTaskModal component - modal dialog for creating new tasks
+ * 
+ * Provides:
+ * - Trigger button with Plus icon
+ * - Dialog/modal with CreateTaskForm
+ * - Auto-close on successful creation
+ * - Cancel functionality
+ * 
+ * @example
+ * ```tsx
+ * <CreateTaskModal />
+ * ```
+ */
 export function CreateTaskModal() {
   const [open, setOpen] = useState(false);
 

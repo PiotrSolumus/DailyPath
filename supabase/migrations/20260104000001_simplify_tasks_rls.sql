@@ -60,3 +60,5 @@ create policy tasks_delete_rules on public.tasks
     or auth.role() = 'service_role'
   );
 
+
+

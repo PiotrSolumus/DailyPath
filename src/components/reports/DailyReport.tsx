@@ -130,8 +130,8 @@ export function DailyReport({ filters }: DailyReportProps) {
                 {reports.map((report, index) => (
                   <tr key={index} className="border-b">
                     <td className="px-4 py-3 text-sm">{report.date}</td>
-                    <td className="px-4 py-3 text-sm">{report.user_id ?? "-"}</td>
-                    <td className="px-4 py-3 text-sm">{report.department_id ?? "-"}</td>
+                    <td className="px-4 py-3 text-sm">{report.user_name ?? report.user_id ?? "-"}</td>
+                    <td className="px-4 py-3 text-sm">{report.department_name ?? report.department_id ?? "-"}</td>
                     <td className="px-4 py-3 text-right text-sm">
                       {Math.floor(report.logged_minutes / 60)}h {report.logged_minutes % 60}min
                     </td>

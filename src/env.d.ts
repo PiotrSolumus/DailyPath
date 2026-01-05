@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./db/database.types";
+import type { UserMeDTO } from "./types";
 
 interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
@@ -21,10 +22,6 @@ declare namespace App {
   interface Locals {
     supabase: SupabaseClient<Database>;
     supabaseAdmin: SupabaseClient<Database>;
-    user: {
-      id: string;
-      app_role: string;
-      email: string;
-    } | null;
+    user: UserMeDTO | null;
   }
 }

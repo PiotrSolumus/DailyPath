@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 import type { TimeLogDTO, CreateTimeLogCommand, UpdateTimeLogCommand } from "@/types";
+import { HttpError } from "@/lib/utils/http-error";
 
 /**
  * Time Log Service
@@ -60,10 +61,12 @@ export async function listTimeLogs(
       .from("time_logs")
       .select("id, task_id, user_id, period");
 
+    // SECURITY: In no-auth/dev mode we often use service role (bypass RLS).
+    // Force scope to the current user unless explicitly overridden elsewhere.
+    const effectiveUserId = filters.user_id ?? userId;
+
     // Apply filters
-    if (filters.user_id) {
-      query = query.eq("user_id", filters.user_id);
-    }
+    query = query.eq("user_id", effectiveUserId);
 
     if (filters.task_id) {
       query = query.eq("task_id", filters.task_id);
@@ -172,10 +175,31 @@ export async function createTimeLog(
  */
 export async function updateTimeLog(
   supabase: SupabaseClient<Database>,
+  userId: string,
   timeLogId: string,
   data: UpdateTimeLogCommand
 ): Promise<boolean> {
   try {
+    // SECURITY: ensure user can only edit their own time logs (service role bypasses RLS)
+    const { data: existing, error: existingError } = await supabase
+      .from("time_logs")
+      .select("id, user_id")
+      .eq("id", timeLogId)
+      .single();
+
+    if (existingError) {
+      console.error("Error fetching time log before update:", existingError);
+      throw existingError;
+    }
+
+    if (!existing || existing.user_id !== userId) {
+      throw new HttpError({
+        status: 403,
+        error: "Forbidden",
+        message: "Nie masz dostępu do tego logu czasu",
+      });
+    }
+
     const updateData: Database["public"]["Tables"]["time_logs"]["Update"] = {
       period: data.period,
     };
@@ -208,9 +232,30 @@ export async function updateTimeLog(
  */
 export async function deleteTimeLog(
   supabase: SupabaseClient<Database>,
+  userId: string,
   timeLogId: string
 ): Promise<boolean> {
   try {
+    // SECURITY: ensure user can only delete their own time logs (service role bypasses RLS)
+    const { data: existing, error: existingError } = await supabase
+      .from("time_logs")
+      .select("id, user_id")
+      .eq("id", timeLogId)
+      .single();
+
+    if (existingError) {
+      console.error("Error fetching time log before delete:", existingError);
+      throw existingError;
+    }
+
+    if (!existing || existing.user_id !== userId) {
+      throw new HttpError({
+        status: 403,
+        error: "Forbidden",
+        message: "Nie masz dostępu do tego logu czasu",
+      });
+    }
+
     const { error } = await supabase
       .from("time_logs")
       .delete()

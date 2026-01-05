@@ -5,8 +5,12 @@ import { AdminViewWrapper } from "../components/admin/AdminViewWrapper";
 // Get user from middleware (can be null if not logged in)
 const user = Astro.locals.user;
 
-// Check if user is admin
-if (!user || user.app_role !== "admin") {
+// Check if user is selected and is admin
+if (!user) {
+  return Astro.redirect("/login");
+}
+
+if (user.app_role !== "admin") {
   return Astro.redirect("/dashboard");
 }
 ---
@@ -18,7 +22,7 @@ if (!user || user.app_role !== "admin") {
       <p class="text-muted-foreground">Panel administracyjny systemu</p>
     </div>
 
-    <AdminViewWrapper client:load initialUser={user} />
+    <AdminViewWrapper client:only="react" initialUser={user} />
   </div>
 </AppLayout>
 

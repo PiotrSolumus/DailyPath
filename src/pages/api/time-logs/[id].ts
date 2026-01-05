@@ -38,7 +38,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     return new Response(
       JSON.stringify({
         error: "Unauthorized",
-        message: "Valid authentication required",
+        message: "Proszę wybrać użytkownika na stronie /login",
       }),
       {
         status: 401,
@@ -84,7 +84,8 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     }
 
     // 5. Call service layer to update time log
-    await updateTimeLog(locals.supabase, timeLogId, validation.data);
+    // Use admin client to bypass RLS since we've already verified authentication
+    await updateTimeLog(locals.supabaseAdmin, locals.user.id, timeLogId, validation.data);
 
     // 6. Return successful response
     return new Response(
@@ -106,7 +107,7 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     return new Response(
       JSON.stringify({
         error: "Unauthorized",
-        message: "Valid authentication required",
+        message: "Proszę wybrać użytkownika na stronie /login",
       }),
       {
         status: 401,
@@ -132,7 +133,8 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 
   try {
     // 3. Call service layer to delete time log
-    await deleteTimeLog(locals.supabase, timeLogId);
+    // Use admin client to bypass RLS since we've already verified authentication
+    await deleteTimeLog(locals.supabaseAdmin, locals.user.id, timeLogId);
 
     // 4. Return successful response
     return new Response(

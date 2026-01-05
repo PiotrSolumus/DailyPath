@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     return new Response(
       JSON.stringify({
         error: "Unauthorized",
-        message: "Valid authentication required",
+        message: "Proszę wybrać użytkownika na stronie /login",
       }),
       {
         status: 401,
@@ -80,15 +80,20 @@ export const GET: APIRoute = async ({ locals, url }) => {
       );
     }
 
-    // 3. Call service layer with validated parameters
+    // 3. Force scope to current user (time logs are always per logged-in user)
+    // SECURITY: In no-auth/dev mode we use service role (bypass RLS), so we must enforce this here.
+    const scopedFilters = { ...validation.data, user_id: locals.user.id };
+
+    // 4. Call service layer with validated parameters
+    // Use admin client to bypass RLS since we've already verified authentication
     const timeLogs = await listTimeLogs(
-      locals.supabase,
+      locals.supabaseAdmin,
       locals.user.id,
       locals.user.app_role,
-      validation.data
+      scopedFilters
     );
 
-    // 4. Return successful response
+    // 5. Return successful response
     return new Response(JSON.stringify(timeLogs), {
       status: 200,
       headers: {
@@ -97,7 +102,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       },
     });
   } catch (error) {
-    // 5. Handle errors with centralized error handler
+    // 6. Handle errors with centralized error handler
     return handleApiError(error);
   }
 };
@@ -108,7 +113,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     return new Response(
       JSON.stringify({
         error: "Unauthorized",
-        message: "Valid authentication required",
+        message: "Proszę wybrać użytkownika na stronie /login",
       }),
       {
         status: 401,
@@ -139,7 +144,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
     }
 
     // 4. Call service layer to create time log
-    const timeLogId = await createTimeLog(locals.supabase, locals.user.id, validation.data);
+    // Use admin client to bypass RLS since we've already verified authentication
+    const timeLogId = await createTimeLog(locals.supabaseAdmin, locals.user.id, validation.data);
 
     // 5. Return successful response
     return new Response(
