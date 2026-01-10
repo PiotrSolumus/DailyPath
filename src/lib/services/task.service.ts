@@ -408,9 +408,7 @@ export async function updateTask(
         }
       } else {
         // No direct assignee anymore (e.g., assigned to department) — remove user-specific plan slots
-        const { error: deleteError } = await supabase.from("plan_slots").delete().eq("task_id", taskId);
-
-        if (deleteError) {
+        const { error: deleteError } = await supabase.from("plan_slots").delete().eq("task_id", taskId);        if (deleteError) {
           console.error("Error removing plan slots after unassigning task:", deleteError);
           throw deleteError;
         }
