@@ -56,11 +56,31 @@ const reactConfig = tseslint.config({
   },
 });
 
+// Node.js scripts configuration
+const nodeScriptsConfig = tseslint.config({
+  files: ["scripts/**/*.js"],
+  languageOptions: {
+    globals: {
+      console: "readonly",
+      process: "readonly",
+      Buffer: "readonly",
+      __dirname: "readonly",
+      __filename: "readonly",
+    },
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
+  rules: {
+    "no-console": "off", // Scripts can use console
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   baseConfig,
   jsxA11yConfig,
   reactConfig,
+  nodeScriptsConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );
