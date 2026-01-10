@@ -1,4 +1,4 @@
-# DailyPath
+# DailyPath.
 
 MVP implementation of DailyPatch: a web application for daily and weekly planning in 15‑minute slots, manual time logging, and lightweight reporting for teams. Employees plan and track work; managers get quick visibility into team plans and can assign work when needed.
 
