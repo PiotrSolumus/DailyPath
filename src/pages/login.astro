@@ -1,100 +1,15 @@
 ---
-// TEMPORARY: Simple user selection page (no real authentication)
-const supabaseAdmin = Astro.locals.supabaseAdmin;
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { LoginForm } from "../components/auth/LoginForm";
+import { redirectIfAuthenticated } from "../lib/utils/auth";
 
-// Fetch all users
-const { data: users, error } = await supabaseAdmin
-  .from("users")
-  .select("id, email, full_name, app_role")
-  .order("app_role", { ascending: false })
-  .order("email", { ascending: true });
+// Redirect to dashboard if user is already logged in
+redirectIfAuthenticated(Astro);
 
-if (error) {
-  console.error("Error fetching users:", error);
-}
+const redirect = Astro.url.searchParams.get("redirect") || "/dashboard";
+const message = Astro.url.searchParams.get("message");
 ---
 
-<!doctype html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" href="/src/styles/global.css" />
-    <title>Wybór użytkownika - DailyPath</title>
-  </head>
-  <body class="min-h-screen bg-background">
-    <div class="flex min-h-screen items-center justify-center p-4">
-      <div class="w-full max-w-2xl space-y-8">
-        <div class="text-center">
-          <h1 class="text-3xl font-bold tracking-tight">DailyPath</h1>
-          <p class="mt-2 text-muted-foreground">⚠️ Tryb testowy - wybierz użytkownika</p>
-        </div>
-
-        <div class="rounded-lg border bg-card p-8 shadow-sm">
-          <div class="mb-6 rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4 text-sm">
-            <p class="font-semibold text-yellow-800 dark:text-yellow-200">Uwaga: Autentykacja wyłączona</p>
-            <p class="mt-1 text-yellow-700 dark:text-yellow-300">
-              Wybierz użytkownika z listy, aby testować aplikację. Możesz też dodać nowych użytkowników w panelu Admin.
-            </p>
-          </div>
-
-          {users && users.length > 0 ? (
-            <div class="space-y-3">
-              <h2 class="text-lg font-semibold mb-4">Dostępni użytkownicy:</h2>
-              {users.map((user) => (
-                <button
-                  type="button"
-                  class="w-full text-left rounded-lg border bg-background p-4 hover:bg-accent hover:border-primary transition-colors"
-                  data-user-id={user.id}
-                  onclick={`selectUser('${user.id}')`}
-                >
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="font-medium">{user.full_name}</p>
-                      <p class="text-sm text-muted-foreground">{user.email}</p>
-                    </div>
-                    <span class={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.app_role === 'admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                      user.app_role === 'manager' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                    }`}>
-                      {user.app_role}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div class="text-center py-8">
-              <p class="text-muted-foreground">Brak użytkowników w bazie danych.</p>
-              <p class="text-sm text-muted-foreground mt-2">Uruchom skrypt seed-database.js aby utworzyć testowych użytkowników.</p>
-            </div>
-          )}
-        </div>
-
-        <div class="text-center text-sm text-muted-foreground">
-          <p>Aby dodać użytkowników, zaloguj się jako admin lub uruchom:</p>
-          <code class="block mt-2 bg-muted px-4 py-2 rounded">node scripts/seed-database.js</code>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      // @ts-nocheck
-      function selectUser(userId: string) {
-        // Set cookie with user ID
-        document.cookie = `temp_user_id=${userId}; path=/; max-age=86400`; // 24 hours
-        
-        console.log('🔓 Selected user:', userId);
-        
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
-      }
-
-      // Make function available globally
-      (window as any).selectUser = selectUser;
-    </script>
-  </body>
-</html>
-
+<AuthLayout title="Logowanie - DailyPath">
+  <LoginForm client:load redirect={redirect} initialMessage={message} />
+</AuthLayout>

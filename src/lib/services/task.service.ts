@@ -385,9 +385,7 @@ export async function updateTask(
     const updateData: Database["public"]["Tables"]["tasks"]["Update"] = {
       ...data,
       updated_at: new Date().toISOString(),
-    };
-
-    // Update task
+    };    // Update task
     const { error } = await supabase
       .from("tasks")
       .update(updateData)
@@ -396,9 +394,7 @@ export async function updateTask(
     if (error) {
       console.error("Error updating task:", error);
       throw error;
-    }
-
-    // Keep plan slots in sync with task assignment
+    }    // Keep plan slots in sync with task assignment
     if (previousAssignee !== nextAssignee) {
       if (nextAssignee) {
         const { error: reassignError } = await supabase
@@ -425,4 +421,3 @@ export async function updateTask(
     throw error;
   }
 }
-

@@ -16,9 +16,9 @@ const createUserSchema = z.object({
 /**
  * POST /api/admin/users
  * Create a new user (Admin only)
- * 
- * ⚠️ TEMPORARY: Auth creation is disabled - users are created directly in the database
- * Users created this way will NOT be able to log in until Auth is enabled
+ *
+ * Creates a user in both Supabase Auth and public.users table.
+ * The user can log in immediately after creation.
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -68,18 +68,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { email, full_name, password, app_role, timezone } = validation.data;
 
-    // TEMPORARY: Skip Auth creation, generate random UUID
-    // Generate a random UUID for the user
-    const userId = crypto.randomUUID();
-
-    console.log("⚠️ TEMPORARY: Creating user without Auth -", email);
-
     // Check for duplicate email in users table (use admin client to bypass RLS)
-    const { data: existingUser } = await supabaseAdmin
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .single();
+    const { data: existingUser } = await supabaseAdmin.from("users").select("id").eq("email", email).single();
 
     if (existingUser) {
       return new Response(
@@ -94,12 +84,77 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Create user profile in public.users table directly
-    // Use supabaseAdmin (service_role) to bypass foreign key constraint to auth.users
+    // Create user in Supabase Auth using Admin API with service role key
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm email so user can log in immediately
+      user_metadata: {
+        full_name,
+      },
+      app_metadata: {
+        app_role,
+      },
+    });
+
+    if (authError) {
+      console.error("Error creating user in auth:", authError);
+
+      // Check for duplicate email
+      if (
+        authError.message.includes("already registered") ||
+        authError.message.includes("already exists") ||
+        authError.message.includes("User already registered")
+      ) {
+        return new Response(
+          JSON.stringify({
+            error: "Conflict",
+            message: "Użytkownik z tym adresem email już istnieje",
+          }),
+          {
+            status: 409,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: "Auth error",
+          message: "Nie udało się utworzyć użytkownika w systemie uwierzytelniania",
+          details: authError.message,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!authData.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Auth error",
+          message: "Nie udało się utworzyć użytkownika",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Use the auth user ID for the profile
+    const userId = authData.user.id;
+
+    console.log(`✅ Created auth user: ${email} (ID: ${userId})`);
+
+    // Create user profile in public.users table
+    // Use supabaseAdmin (service_role) to ensure proper creation
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from("users")
       .insert({
-        id: userId,
+        id: userId, // Use auth user ID to ensure IDs match
         email,
         full_name,
         app_role,
@@ -110,6 +165,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (profileError) {
       console.error("Error creating user profile:", profileError);
+
+      // Cleanup: Delete the auth user if profile creation failed
+      // This prevents orphaned auth users
+      try {
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        console.log(`Cleaned up auth user ${userId} after profile creation failure`);
+      } catch (cleanupError) {
+        console.error("Failed to cleanup auth user after profile creation failure:", cleanupError);
+      }
 
       return new Response(
         JSON.stringify({
@@ -123,6 +187,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }
       );
     }
+
+    console.log(`✅ Created user profile: ${email} (ID: ${profileData.id})`);
+    console.log(`✅ User creation complete - user can log in immediately`);
 
     return new Response(
       JSON.stringify({
@@ -157,7 +224,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 /**
  * GET /api/admin/users
  * Get all users (Admin only)
- * 
+ *
  * ⚠️ Uses supabaseAdmin to bypass RLS since users may not have Auth accounts
  */
 export const GET: APIRoute = async ({ locals }) => {
@@ -187,10 +254,11 @@ export const GET: APIRoute = async ({ locals }) => {
       );
     }
 
-    // Fetch all users (keep selection conservative to avoid schema mismatch across envs)
+    // Fetch all active users (keep selection conservative to avoid schema mismatch across envs)
     const { data, error } = await supabaseAdmin
       .from("users")
       .select("id, email, full_name, app_role, is_active, timezone")
+      .eq("is_active", true)
       .order("app_role", { ascending: false })
       .order("email", { ascending: true });
 
@@ -227,9 +295,7 @@ export const GET: APIRoute = async ({ locals }) => {
       );
     }
 
-    const { data: departments, error: departmentsError } = await supabaseAdmin
-      .from("departments")
-      .select("id, name");
+    const { data: departments, error: departmentsError } = await supabaseAdmin.from("departments").select("id, name");
 
     if (departmentsError) {
       console.error("Error fetching departments for memberships:", departmentsError);

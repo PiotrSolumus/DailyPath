@@ -1,9 +1,10 @@
 ---
 import AppLayout from "../layouts/AppLayout.astro";
 import { SettingsViewWrapper } from "../components/settings/SettingsViewWrapper";
+import { requireAuth } from "../lib/utils/auth";
 
-// Get user from middleware (can be null if not logged in)
-const user = Astro.locals.user;
+// Ensure user is authenticated
+const user = requireAuth(Astro);
 ---
 
 <AppLayout title="Ustawienia - DailyPath" user={user}>

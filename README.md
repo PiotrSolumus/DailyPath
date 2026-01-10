@@ -11,6 +11,7 @@ Badges: [Node 22.14.0](https://img.shields.io/badge/node-22.14.0-339933?logo=nod
 - [Tech stack](#tech-stack)
 - [Getting started locally](#getting-started-locally)
 - [Available scripts](#available-scripts)
+- [Authentication & authorization](#authentication--authorization)
 - [Project scope](#project-scope)
 - [Project status](#project-status)
 - [License](#license)
@@ -77,6 +78,51 @@ npm run preview
 - `npm run lint` — Run ESLint over the project
 - `npm run lint:fix` — Fix lint issues where possible
 - `npm run format` — Format files with Prettier
+
+## Authentication & authorization
+
+DailyPath uses **Supabase Auth** with server-side rendering (SSR) for secure authentication and authorization.
+
+### Protected routes
+
+All main application pages require authentication:
+- **Home page** (`/`) - requires login
+- **Dashboard** (`/dashboard`) - requires login
+- **Tasks** (`/tasks`) - requires login
+- **Plan** (`/plan`) - requires login
+- **Settings** (`/settings`) - requires login
+- **Reports** (`/reports`) - requires login
+- **Team** (`/team`) - requires login
+- **Time logs** (`/time-logs`) - requires login
+- **Admin** (`/admin`) - requires Admin role
+
+### Usage in Astro pages
+
+```astro
+---
+import { requireAuth } from "../lib/utils/auth";
+
+// Ensure user is authenticated
+const user = requireAuth(Astro);
+---
+```
+
+For pages requiring specific roles:
+
+```astro
+---
+import { requireRole } from "../lib/utils/auth";
+
+// Ensure user has Admin role
+const user = requireRole(Astro, "Admin");
+---
+```
+
+### Documentation
+
+For detailed documentation on authentication and authorization:
+- **[Login Guide](LOGIN_GUIDE.md)** - How to login and test user accounts
+- **[Auth Protection Guide](docs/AUTH_PROTECTION_GUIDE.md)** - How to protect pages and implement authorization
 
 ## Project scope
 

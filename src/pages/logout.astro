@@ -1,5 +1,8 @@
 ---
-// TEMPORARY: Simple logout - just clear the cookie
+/**
+ * Logout page
+ * Calls the logout API endpoint to clear session and redirects to login
+ */
 ---
 
 <!doctype html>
@@ -9,21 +12,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>Wylogowanie - DailyPath</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: #f9fafb;
+      }
+      .message {
+        text-align: center;
+        padding: 2rem;
+      }
+    </style>
   </head>
   <body>
-    <div class="flex min-h-screen items-center justify-center">
+    <div class="message">
       <p>Wylogowywanie...</p>
     </div>
 
     <script>
-      // Clear temp user cookie
-      document.cookie = 'temp_user_id=; path=/; max-age=0';
-      
-      console.log('🔓 Logged out');
-      
-      // Redirect to login
-      window.location.href = '/login';
+      // Call logout API endpoint
+      (async () => {
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            console.log('✅ Logged out successfully');
+          } else {
+            console.error('❌ Logout failed');
+          }
+        } catch (error) {
+          console.error('❌ Logout error:', error);
+        } finally {
+          // Always redirect to login page
+          window.location.href = '/login?message=Wylogowano pomyślnie';
+        }
+      })();
     </script>
   </body>
 </html>
-

@@ -1,0 +1,31 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { RegisterForm } from "../components/auth/RegisterForm";
+import { redirectIfAuthenticated } from "../lib/utils/auth";
+
+// Redirect to dashboard if user is already logged in
+redirectIfAuthenticated(Astro);
+
+const token = Astro.url.searchParams.get("token");
+let invitationEmail: string | undefined;
+
+// TODO: Po implementacji backendu - sprawdzenie ważności tokena zaproszenia
+// if (token) {
+//   // Fetch invitation data from backend
+//   // const invitation = await validateInvitationToken(token);
+//   // if (invitation) {
+//   //   invitationEmail = invitation.email;
+//   // } else {
+//   //   // Token invalid or expired
+//   //   return Astro.redirect('/login?message=Zaproszenie jest nieprawidłowe lub wygasło');
+//   // }
+// }
+---
+
+<AuthLayout title="Rejestracja - DailyPath">
+  <RegisterForm
+    client:load
+    invitationToken={token || undefined}
+    invitationEmail={invitationEmail}
+  />
+</AuthLayout>

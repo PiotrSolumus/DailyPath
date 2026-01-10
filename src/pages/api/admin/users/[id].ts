@@ -84,34 +84,32 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     }
 
     if (memberships?.length) {
-      const updates = memberships
-        .map((membership) => {
-          const period = membership.period as string;
-          if (typeof period !== "string") return null;
-          const { lower, upper } = parsePeriodBounds(period);
-          if (!lower) return null;
-          // Close only open-ended or future-upper memberships
-          if (!upper || today < upper) {
-            if (today < lower) {
-              return { id: membership.id, period: null }; // will skip update
-            }
-            return { id: membership.id, period: `[${lower},${today})` };
+      // Update each membership individually
+      for (const membership of memberships) {
+        const period = membership.period as string;
+        if (typeof period !== "string") continue;
+        
+        const { lower, upper } = parsePeriodBounds(period);
+        if (!lower) continue;
+        
+        // Close only open-ended or future-upper memberships
+        if (!upper || today < upper) {
+          // Skip if membership starts in the future
+          if (today < lower) continue;
+          
+          const closedPeriod = `[${lower},${today})`;
+          const { error: updateError } = await supabaseAdmin
+            .from("memberships")
+            .update({ period: closedPeriod })
+            .eq("id", membership.id);
+
+          if (updateError) {
+            console.error("Error closing membership on user delete:", updateError, { membershipId: membership.id });
+            return new Response(
+              JSON.stringify({ error: "Database error", message: "Nie udało się domknąć członkostw" }),
+              { status: 500, headers: { "Content-Type": "application/json" } }
+            );
           }
-          return null;
-        })
-        .filter((u): u is { id: number; period: string } => !!u && !!u.period);
-
-      if (updates.length > 0) {
-        const { error: updateMembershipsError } = await supabaseAdmin
-          .from("memberships")
-          .upsert(updates as any); // upsert for batch updates
-
-        if (updateMembershipsError) {
-          console.error("Error closing memberships on user delete:", updateMembershipsError);
-          return new Response(
-            JSON.stringify({ error: "Database error", message: "Nie udało się domknąć członkostw" }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-          );
         }
       }
     }
