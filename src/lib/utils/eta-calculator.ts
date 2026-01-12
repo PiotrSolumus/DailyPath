@@ -31,10 +31,7 @@ export async function batchCalculateETA(
   try {
     // Fetch all plan_slots for the given tasks in one query
     // Note: Cannot order by tstzrange type directly, so we'll sort in-memory
-    const { data: slots, error } = await supabase
-      .from("plan_slots")
-      .select("task_id, period")
-      .in("task_id", taskIds);
+    const { data: slots, error } = await supabase.from("plan_slots").select("task_id, period").in("task_id", taskIds);
 
     if (error) {
       console.error("Error fetching plan slots for ETA calculation:", error);
@@ -180,4 +177,3 @@ function calculateRangeDurationMinutes(tstzrange: string): number {
     return 0;
   }
 }
-

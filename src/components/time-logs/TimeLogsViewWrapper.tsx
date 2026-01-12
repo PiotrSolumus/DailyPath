@@ -17,4 +17,3 @@ export function TimeLogsViewWrapper({ initialUser, initialFilters }: TimeLogsVie
     </AppProviders>
   );
 }
-

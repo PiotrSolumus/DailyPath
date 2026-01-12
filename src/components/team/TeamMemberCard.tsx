@@ -16,7 +16,12 @@ interface TeamMemberCardProps {
 }
 
 export function TeamMemberCard({ member, onViewPlan }: TeamMemberCardProps) {
-  const planFillColor = member.plan_filled_percent >= 70 ? "text-green-600" : member.plan_filled_percent >= 50 ? "text-yellow-600" : "text-red-600";
+  const planFillColor =
+    member.plan_filled_percent >= 70
+      ? "text-green-600"
+      : member.plan_filled_percent >= 50
+        ? "text-yellow-600"
+        : "text-red-600";
 
   return (
     <Card>
@@ -55,4 +60,3 @@ export function TeamMemberCard({ member, onViewPlan }: TeamMemberCardProps) {
     </Card>
   );
 }
-

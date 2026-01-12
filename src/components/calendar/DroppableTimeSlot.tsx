@@ -22,4 +22,3 @@ export function DroppableTimeSlot({ slotId, time, timezone, isHourStart, isOccup
     </div>
   );
 }
-

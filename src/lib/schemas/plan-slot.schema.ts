@@ -30,10 +30,11 @@ export type CreatePlanSlotInput = z.infer<typeof createPlanSlotSchema>;
  * Validates plan slot update payload
  */
 export const updatePlanSlotSchema = z.object({
-  period: z.string().regex(/^\[.+,\s*.+\)$/, "Invalid period format (expected tstzrange)").optional(),
+  period: z
+    .string()
+    .regex(/^\[.+,\s*.+\)$/, "Invalid period format (expected tstzrange)")
+    .optional(),
   allow_overlap: z.boolean().optional(),
 });
 
 export type UpdatePlanSlotInput = z.infer<typeof updatePlanSlotSchema>;
-
-

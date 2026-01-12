@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
-import type { TaskDTO, CreateTaskCommand } from "@/types";
+import type { TaskDTO, CreateTaskCommand, UpdateTaskCommand } from "@/types";
 import type { TaskQueryParams } from "@/lib/schemas/task.schema";
 import { batchCalculateETA } from "@/lib/utils/eta-calculator";
 import { getManagerDepartments } from "./auth.service";
@@ -36,17 +36,15 @@ export async function listTasks(
 ): Promise<TaskDTO[]> {
   try {
     // Build base query with join for assigned_by user (name/email)
-    let query = supabase
-      .from("tasks")
-      .select(
-        `
+    let query = supabase.from("tasks").select(
+      `
           *,
           assigned_by:users!tasks_assigned_by_user_id_fkey (
             full_name,
             email
           )
-        `,
-      );
+        `
+    );
 
     // Apply filters
     if (filters.status) {
@@ -152,7 +150,10 @@ export async function getTasksByIds(
       return [];
     }
 
-    const etaMap = await batchCalculateETA(supabase, tasks.map((t) => t.id));
+    const etaMap = await batchCalculateETA(
+      supabase,
+      tasks.map((t) => t.id)
+    );
 
     const hasPrivateTasks = tasks.some((t) => t.is_private);
     const managerDepartments =
@@ -213,7 +214,9 @@ function applyPrivacyMask(
   // Private tasks: check permissions
   const isOwner = task.assigned_user_id === userId;
   const isAdmin = userRole === "admin";
-  const isManagerOfTaskDepartment = task.assigned_department_id ? managerDepartments.has(task.assigned_department_id) : false;
+  const isManagerOfTaskDepartment = task.assigned_department_id
+    ? managerDepartments.has(task.assigned_department_id)
+    : false;
 
   // User has permission to see full description
   if (isOwner || isAdmin || isManagerOfTaskDepartment) {
@@ -323,11 +326,7 @@ export async function createTask(
     }
 
     // Insert task
-    const { data: task, error } = await supabase
-      .from("tasks")
-      .insert(insertData)
-      .select("id")
-      .single();
+    const { data: task, error } = await supabase.from("tasks").insert(insertData).select("id").single();
 
     if (error) {
       console.error("Error creating task:", error);
@@ -377,38 +376,30 @@ export async function updateTask(
 
     const previousAssignee = currentTask.assigned_to_type === "user" ? currentTask.assigned_user_id : null;
     const nextAssignedToType = data.assigned_to_type ?? currentTask.assigned_to_type;
-    const nextAssignee = nextAssignedToType === "user"
-      ? data.assigned_user_id ?? currentTask.assigned_user_id
-      : null;
+    const nextAssignee = nextAssignedToType === "user" ? (data.assigned_user_id ?? currentTask.assigned_user_id) : null;
 
     // Prepare update data
     const updateData: Database["public"]["Tables"]["tasks"]["Update"] = {
       ...data,
       updated_at: new Date().toISOString(),
-    };    // Update task
-    const { error } = await supabase
-      .from("tasks")
-      .update(updateData)
-      .eq("id", taskId);
-
-    if (error) {
+    }; // Update task
+    const { error } = await supabase.from("tasks").update(updateData).eq("id", taskId);    if (error) {
       console.error("Error updating task:", error);
       throw error;
-    }    // Keep plan slots in sync with task assignment
+    } // Keep plan slots in sync with task assignment
     if (previousAssignee !== nextAssignee) {
       if (nextAssignee) {
         const { error: reassignError } = await supabase
           .from("plan_slots")
           .update({ user_id: nextAssignee })
-          .eq("task_id", taskId);
-
-        if (reassignError) {
+          .eq("task_id", taskId);        if (reassignError) {
           console.error("Error reassigning plan slots to new user:", reassignError);
           throw reassignError;
         }
       } else {
         // No direct assignee anymore (e.g., assigned to department) — remove user-specific plan slots
-        const { error: deleteError } = await supabase.from("plan_slots").delete().eq("task_id", taskId);        if (deleteError) {
+        const { error: deleteError } = await supabase.from("plan_slots").delete().eq("task_id", taskId);
+        if (deleteError) {
           console.error("Error removing plan slots after unassigning task:", deleteError);
           throw deleteError;
         }
@@ -416,6 +407,54 @@ export async function updateTask(
     }
   } catch (error) {
     console.error("Error in updateTask service:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a task
+ *
+ * Note: Related plan_slots, time_logs, and task_assignments are automatically
+ * deleted via CASCADE foreign key constraints in the database.
+ *
+ * @param supabase - Supabase client instance
+ * @param taskId - Task ID to delete
+ * @returns void
+ * @throws Error if task not found or deletion fails
+ */
+export async function deleteTask(
+  supabase: SupabaseClient<Database>,
+  taskId: string
+): Promise<void> {
+  try {
+    // Check if task exists
+    const { data: task, error: fetchError } = await supabase
+      .from("tasks")
+      .select("id")
+      .eq("id", taskId)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === "PGRST116") {
+        // Not found or RLS denied access
+        throw new Error("Task not found");
+      }
+      throw fetchError;
+    }
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    // Delete task (CASCADE will handle related records)
+    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+
+    if (error) {
+      console.error("Error deleting task:", error);
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error in deleteTask service:", error);
     throw error;
   }
 }

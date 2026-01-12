@@ -1,11 +1,19 @@
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select } from "../ui/select";
-import { DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "../ui/dialog";
 import { getErrorMessage } from "../../lib/utils/error-messages";
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { AssigneeSelector } from "./AssigneeSelector";
@@ -38,8 +46,24 @@ async function updateTask(taskId: string, data: UpdateTaskCommand): Promise<void
 }
 
 /**
+ * Delete a task via API
+ * DELETEs /api/tasks/:id
+ * @throws {Error} When API request fails
+ */
+async function deleteTask(taskId: string): Promise<void> {
+  const response = await fetch(`/api/tasks/${taskId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+}
+
+/**
  * EditTaskForm component - form for editing existing tasks
- * 
+ *
  * Features:
  * - All fields editable: title, description, priority, status, estimate, due_date, is_private
  * - HTML5 validation (required, min, step for estimate)
@@ -48,7 +72,7 @@ async function updateTask(taskId: string, data: UpdateTaskCommand): Promise<void
  * - Toast notifications (success/error)
  * - Automatic cache invalidation on success
  * - Empty description converted to null before submit
- * 
+ *
  * Validation:
  * - Title: required (HTML5)
  * - Priority: required, one of "low", "medium", "high"
@@ -56,13 +80,13 @@ async function updateTask(taskId: string, data: UpdateTaskCommand): Promise<void
  * - Estimate: required, min 15, step 15 (must be multiple of 15)
  * - Due date: optional ISO date string
  * - Is private: boolean checkbox
- * 
+ *
  * Performance:
  * - Submit handler memoized with useCallback
- * 
+ *
  * @example
  * ```tsx
- * <EditTaskForm 
+ * <EditTaskForm
  *   task={taskDTO}
  *   onSuccess={() => setModalOpen(false)}
  *   onCancel={() => setModalOpen(false)}
@@ -72,6 +96,7 @@ async function updateTask(taskId: string, data: UpdateTaskCommand): Promise<void
 export function EditTaskForm({ task, onSuccess, onCancel }: EditTaskFormProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState<UpdateTaskCommand>({
     title: task.title,
     description: task.description || "",
@@ -89,11 +114,36 @@ export function EditTaskForm({ task, onSuccess, onCancel }: EditTaskFormProps) {
     mutationFn: (data: UpdateTaskCommand) => updateTask(task.id, data),
     onSuccess: () => {
       // Invalidate all queries starting with "tasks" to refresh filtered lists
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         queryKey: ["tasks"],
-        refetchType: "all"
+        refetchType: "all",
       });
       toast.success("Zadanie zostało zaktualizowane");
+      onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteTask(task.id),
+    onSuccess: async () => {
+      // Manually update all task queries to remove deleted task immediately
+      queryClient.setQueriesData<TaskDTO[]>(
+        { queryKey: ["tasks"] },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return oldData.filter((t) => t.id !== task.id);
+        }
+      );
+      // Invalidate and refetch all queries starting with "tasks" to ensure consistency
+      await queryClient.invalidateQueries({
+        queryKey: ["tasks"],
+        refetchType: "all",
+      });
+      toast.success("Zadanie zostało usunięte");
+      setIsDeleteDialogOpen(false);
       onSuccess?.();
     },
     onError: (error) => {
@@ -118,6 +168,7 @@ export function EditTaskForm({ task, onSuccess, onCancel }: EditTaskFormProps) {
   );
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       <DialogHeader>
         <DialogTitle>Edytuj zadanie</DialogTitle>
@@ -176,7 +227,9 @@ export function EditTaskForm({ task, onSuccess, onCancel }: EditTaskFormProps) {
             <Select
               id="status"
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as "todo" | "in_progress" | "blocked" | "done" })}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value as "todo" | "in_progress" | "blocked" | "done" })
+              }
               required
             >
               <option value="todo">Do zrobienia</option>
@@ -248,17 +301,56 @@ export function EditTaskForm({ task, onSuccess, onCancel }: EditTaskFormProps) {
         </div>
       </div>
 
-      <DialogFooter>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Anuluj
+      <DialogFooter className="flex-col sm:flex-row gap-2">
+        <div className="flex-1">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="h-4 w-4" />
+            Usuń zadanie
           </Button>
-        )}
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Zapisywanie..." : "Zapisz zmiany"}
-        </Button>
+        </div>
+        <div className="flex gap-2">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Anuluj
+            </Button>
+          )}
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? "Zapisywanie..." : "Zapisz zmiany"}
+          </Button>
+        </div>
       </DialogFooter>
     </form>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Usuń zadanie</DialogTitle>
+          <DialogDescription>
+            Czy na pewno chcesz usunąć zadanie "{task.title}"? Ta operacja jest nieodwracalna i usunie również
+            wszystkie powiązane sloty planowania i logi czasu.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            Anuluj
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => deleteMutation.mutate()}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? "Usuwanie..." : "Usuń zadanie"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
-

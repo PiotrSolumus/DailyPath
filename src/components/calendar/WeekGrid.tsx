@@ -29,17 +29,10 @@ export function WeekGrid({ date, timezone, children }: WeekGridProps) {
           return (
             <div
               key={day.toISOString()}
-              className={cn(
-                "flex-1 border-b border-r p-2 text-center",
-                isToday && "bg-primary/10 font-semibold",
-              )}
+              className={cn("flex-1 border-b border-r p-2 text-center", isToday && "bg-primary/10 font-semibold")}
             >
-              <div className="text-xs uppercase text-muted-foreground">
-                {format(day, "EEE", { locale: pl })}
-              </div>
-              <div className={cn("text-lg", isToday && "text-primary")}>
-                {format(day, "d")}
-              </div>
+              <div className="text-xs uppercase text-muted-foreground">{format(day, "EEE", { locale: pl })}</div>
+              <div className={cn("text-lg", isToday && "text-primary")}>{format(day, "d")}</div>
             </div>
           );
         })}
@@ -73,14 +66,7 @@ export function WeekGrid({ date, timezone, children }: WeekGridProps) {
               {daySlots.map((slot, index) => {
                 const isHourStart = slot.getMinutes() === 0;
 
-                return (
-                  <TimeSlot
-                    key={index}
-                    time={slot}
-                    timezone={timezone}
-                    isHourStart={isHourStart}
-                  />
-                );
+                return <TimeSlot key={index} time={slot} timezone={timezone} isHourStart={isHourStart} />;
               })}
             </div>
           );
@@ -88,10 +74,7 @@ export function WeekGrid({ date, timezone, children }: WeekGridProps) {
       </div>
 
       {/* Task slots overlay */}
-      <div className="pointer-events-none absolute left-20 right-0 top-14">
-        {children}
-      </div>
+      <div className="pointer-events-none absolute left-20 right-0 top-14">{children}</div>
     </div>
   );
 }
-

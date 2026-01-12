@@ -13,16 +13,16 @@ interface TaskListWrapperProps {
 
 /**
  * TaskListWrapper component - wraps TaskList with required providers
- * 
+ *
  * This wrapper ensures TaskList has access to:
  * - QueryProvider (React Query for data fetching)
  * - AuthProvider (user authentication context)
  * - ToastProvider (toast notifications)
  * - NuqsAdapter (URL state management)
- * 
+ *
  * @example
  * ```tsx
- * <TaskListWrapper 
+ * <TaskListWrapper
  *   initialUser={user}
  *   filters={filters}
  *   onTaskClick={(task) => console.log(task)}
@@ -36,4 +36,3 @@ export function TaskListWrapper({ filters, onTaskClick, initialUser }: TaskListW
     </AppProviders>
   );
 }
-

@@ -27,7 +27,11 @@ async function fetchDailyReport(filters: Record<string, string | undefined>): Pr
 }
 
 export function DailyReport({ filters }: DailyReportProps) {
-  const { data: reports, isLoading, error } = useQuery({
+  const {
+    data: reports,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["daily-report", filters],
     queryFn: () => fetchDailyReport(filters),
   });
@@ -100,7 +104,9 @@ export function DailyReport({ filters }: DailyReportProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className={`text-3xl font-bold ${totalLoggedMinutes > totalPlanMinutes ? "text-yellow-600" : "text-green-600"}`}>
+            <p
+              className={`text-3xl font-bold ${totalLoggedMinutes > totalPlanMinutes ? "text-yellow-600" : "text-green-600"}`}
+            >
               {Math.abs(Math.floor((totalLoggedMinutes - totalPlanMinutes) / 60))}h{" "}
               {Math.abs((totalLoggedMinutes - totalPlanMinutes) % 60)}min
             </p>
@@ -151,4 +157,3 @@ export function DailyReport({ filters }: DailyReportProps) {
     </div>
   );
 }
-

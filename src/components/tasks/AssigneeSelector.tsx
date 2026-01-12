@@ -48,14 +48,14 @@ async function fetchDepartments(): Promise<Department[]> {
 
 /**
  * AssigneeSelector component - allows selection of task assignee (user or department)
- * 
+ *
  * Features:
  * - Radio buttons to switch between user/department assignment
  * - Dropdown with list of users (when user is selected)
  * - Dropdown with list of departments (when department is selected)
  * - React Query for data fetching with caching
  * - Loading states
- * 
+ *
  * @example
  * ```tsx
  * <AssigneeSelector
@@ -93,7 +93,7 @@ export function AssigneeSelector({
   // Handle type change
   const handleTypeChange = (newType: "user" | "department") => {
     setLocalType(newType);
-    
+
     // Set default value based on type
     if (newType === "user") {
       // Default to current user if available
@@ -124,7 +124,7 @@ export function AssigneeSelector({
         <Label>
           Przypisz do <span className="text-destructive">{required ? "*" : ""}</span>
         </Label>
-        
+
         {/* Radio buttons for type selection */}
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -138,7 +138,7 @@ export function AssigneeSelector({
             />
             <span className="text-sm">Użytkownik</span>
           </label>
-          
+
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -203,4 +203,3 @@ export function AssigneeSelector({
     </div>
   );
 }
-

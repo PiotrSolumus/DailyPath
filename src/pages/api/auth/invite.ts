@@ -74,11 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const supabaseAdmin = createAdminClient();
 
     // Check if user already exists in users table
-    const { data: existingUser } = await supabaseAdmin
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .single();
+    const { data: existingUser } = await supabaseAdmin.from("users").select("id").eq("email", email).single();
 
     if (existingUser) {
       return new Response(

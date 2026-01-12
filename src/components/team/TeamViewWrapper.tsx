@@ -15,4 +15,3 @@ export function TeamViewWrapper({ departmentId, onViewMemberPlan, initialUser }:
     </AppProviders>
   );
 }
-

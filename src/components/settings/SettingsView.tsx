@@ -250,4 +250,3 @@ export function SettingsView({ initialUser }: SettingsViewProps) {
     </div>
   );
 }
-

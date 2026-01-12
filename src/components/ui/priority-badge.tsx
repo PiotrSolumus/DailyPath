@@ -16,4 +16,3 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
 
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
-

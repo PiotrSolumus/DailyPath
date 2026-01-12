@@ -23,9 +23,5 @@ let invitationEmail: string | undefined;
 ---
 
 <AuthLayout title="Rejestracja - DailyPath">
-  <RegisterForm
-    client:load
-    invitationToken={token || undefined}
-    invitationEmail={invitationEmail}
-  />
+  <RegisterForm client:load invitationToken={token || undefined} invitationEmail={invitationEmail} />
 </AuthLayout>

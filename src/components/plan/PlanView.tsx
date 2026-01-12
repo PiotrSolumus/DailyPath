@@ -45,7 +45,12 @@ async function fetchTasksByIds(ids: string[]): Promise<TaskDTO[]> {
   return response.json();
 }
 
-async function updatePlanSlot(slotId: string, newStartTime: Date, duration: number, allowOverlap: boolean): Promise<void> {
+async function updatePlanSlot(
+  slotId: string,
+  newStartTime: Date,
+  duration: number,
+  allowOverlap: boolean
+): Promise<void> {
   const newEndTime = new Date(newStartTime.getTime() + duration * 60 * 1000);
   const period = formatPgRange(newStartTime, newEndTime);
 
@@ -97,7 +102,12 @@ export function PlanView({ userId, timezone, isManagerView = false }: PlanViewPr
   });
 
   const moveMutation = useMutation({
-    mutationFn: ({ slotId, newStartTime, duration, allowOverlap }: {
+    mutationFn: ({
+      slotId,
+      newStartTime,
+      duration,
+      allowOverlap,
+    }: {
       slotId: string;
       newStartTime: Date;
       duration: number;
@@ -169,12 +179,11 @@ export function PlanView({ userId, timezone, isManagerView = false }: PlanViewPr
       </div>
 
       <aside>
-        <KeyboardPlanControls 
-          selectedSlot={selectedSlot} 
-          onMove={(slotId, newTime) => handleSlotMove(slotId, newTime, false)} 
+        <KeyboardPlanControls
+          selectedSlot={selectedSlot}
+          onMove={(slotId, newTime) => handleSlotMove(slotId, newTime, false)}
         />
       </aside>
     </div>
   );
 }
-

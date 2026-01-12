@@ -16,4 +16,3 @@ export function TimeLogListWrapper({ filters, onEdit, onDelete, initialUser }: T
     </AppProviders>
   );
 }
-

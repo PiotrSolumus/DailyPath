@@ -65,3 +65,21 @@ Przeczytałem `\.ai\prd.md` i porównałem wymagania z proponowanym stackiem. Po
 
 - Podsumowanie zmian i wpływ:
   - Uproszczenia zmniejszają ryzyko i czas delivery, ułatwiają utrzymanie i ograniczają koszty, nie ograniczając wymagań PRD.
+
+### Narzędzia testowe
+
+Projekt wykorzystuje następujące narzędzia do testowania:
+
+- **Testy jednostkowe i integracyjne**: **Vitest** — szybki framework testowy kompatybilny z Vite, idealny dla projektów Astro. Wspiera testy jednostkowe funkcji utility, serwisów, komponentów React oraz integracyjne testy API endpoints i integracji z bazą danych.
+- **Testy E2E**: **Playwright** — framework do testów end-to-end z obsługą wielu przeglądarek (Chrome, Firefox, Safari, Edge). Umożliwia testowanie pełnych flow użytkownika, w tym logowania, tworzenia zadań, planowania i logowania czasu.
+- **Testy komponentów**: **Testing Library** — biblioteka do testowania komponentów React z naciskiem na dostępność i testowanie z perspektywy użytkownika.
+- **Infrastruktura testowa**: **Supabase Test Containers** — lokalne środowisko testowe umożliwiające testowanie integracji z bazą danych i RLS policies bez potrzeby połączenia z zewnętrznym Supabase.
+
+**Strategia testowania** (piramida testów):
+- 60% testy jednostkowe (Vitest)
+- 30% testy integracyjne (Vitest + Supabase Test Containers)
+- 10% testy E2E (Playwright)
+
+Cel pokrycia kodu: minimum 70% dla testów jednostkowych i integracyjnych.
+
+Szczegółowy plan testów znajduje się w [.ai/test-plan.md](.ai/test-plan.md).

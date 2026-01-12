@@ -71,4 +71,3 @@ export function PreferencesStep({ data, onChange }: PreferencesStepProps) {
     </div>
   );
 }
-

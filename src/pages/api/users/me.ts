@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };
@@ -72,7 +72,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -104,7 +104,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -122,8 +122,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };
-

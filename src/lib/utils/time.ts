@@ -9,7 +9,7 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 export function parsePgRange(range: string): { start: Date; end: Date } {
   // Regex that handles optional quotes and various separators
   const match = range.match(/[\[\(]"?([^",]+)"?,\s*"?([^"\)]+)"?[\)\]]/);
-  
+
   if (!match) {
     console.error(`Invalid range format: ${range}`);
     throw new Error(`Invalid range format: ${range}`);
@@ -65,13 +65,13 @@ export function roundTo15Min(date: Date): Date {
 /**
  * Get time slots for a day in 15-minute intervals
  */
-export function getDaySlots(date: Date, startHour: number = 6, endHour: number = 22): Date[] {
+export function getDaySlots(date: Date, startHour = 6, endHour = 22): Date[] {
   const slots: Date[] = [];
   const start = startOfDay(date);
-  
+
   // Calculate number of 15-minute slots between startHour and endHour
   const totalSlots = (endHour - startHour) * 4;
-  
+
   for (let i = 0; i < totalSlots; i++) {
     const slot = new Date(start);
     slot.setHours(startHour);
@@ -87,7 +87,7 @@ export function getDaySlots(date: Date, startHour: number = 6, endHour: number =
  *
  * This avoids hour shifts when the user's `timezone` differs from the browser/system timezone.
  */
-export function getDaySlotsInTimeZone(date: Date, timezone: string, startHour: number = 6, endHour: number = 22): Date[] {
+export function getDaySlotsInTimeZone(date: Date, timezone: string, startHour = 6, endHour = 22): Date[] {
   const slots: Date[] = [];
 
   // Interpret `date` as a day in the provided timezone.
@@ -122,19 +122,19 @@ export function formatTimeSlot(date: Date, timezone: string): string {
 export function calculateSlotPosition(
   startTime: Date,
   endTime: Date,
-  gridStartHour: number = 6,
-  slotHeightPx: number = 40,
+  gridStartHour = 6,
+  slotHeightPx = 40,
   timezone?: string
 ): { top: number; height: number } {
   // Calculate slot index from start of grid using the provided timezone
   const startHour = timezone ? Number(formatInTimeZone(startTime, timezone, "H")) : startTime.getHours();
   const startMinute = timezone ? Number(formatInTimeZone(startTime, timezone, "m")) : startTime.getMinutes();
   const startSlotIndex = (startHour - gridStartHour) * 4 + startMinute / 15;
-  
+
   // Calculate duration in 15-minute slots
   const durationMs = endTime.getTime() - startTime.getTime();
   const durationSlots = durationMs / (15 * 60 * 1000);
-  
+
   return {
     top: startSlotIndex * slotHeightPx,
     height: durationSlots * slotHeightPx,
@@ -151,10 +151,7 @@ export function getDurationMinutes(start: Date, end: Date): number {
 /**
  * Check if two time ranges overlap
  */
-export function rangesOverlap(
-  a: { start: Date; end: Date },
-  b: { start: Date; end: Date },
-): boolean {
+export function rangesOverlap(a: { start: Date; end: Date }, b: { start: Date; end: Date }): boolean {
   return a.start < b.end && b.start < a.end;
 }
 
@@ -188,4 +185,3 @@ export function navigateWeek(currentDate: Date, direction: "prev" | "next"): Dat
 export function navigateDay(currentDate: Date, direction: "prev" | "next"): Date {
   return direction === "prev" ? addDays(currentDate, -1) : addDays(currentDate, 1);
 }
-

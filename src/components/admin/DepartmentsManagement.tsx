@@ -7,14 +7,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { Badge } from "../ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { getErrorMessage } from "@/lib/utils/error-messages";
 
@@ -271,9 +264,7 @@ export function DepartmentsManagement() {
     void refetchMembers();
   };
 
-  const filteredDepartments = departments?.filter((dept) =>
-    dept.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDepartments = departments?.filter((dept) => dept.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <>
@@ -336,16 +327,16 @@ export function DepartmentsManagement() {
                       </div>
                     )}
                     <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleOpenEditDialog(dept)}
-                      >
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleOpenEditDialog(dept)}>
                         <Pencil className="mr-2 h-3 w-3" />
                         Edytuj
                       </Button>
-                      <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleOpenMembersDialog(dept)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleOpenMembersDialog(dept)}
+                      >
                         <Users className="mr-2 h-3 w-3" />
                         Zobacz członków
                       </Button>
@@ -389,9 +380,7 @@ export function DepartmentsManagement() {
                 />
               </div>
 
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-              )}
+              {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
             </div>
 
             <DialogFooter className="mt-6">
@@ -435,9 +424,7 @@ export function DepartmentsManagement() {
                 />
               </div>
 
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-              )}
+              {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
             </div>
 
             <DialogFooter className="mt-6">
@@ -509,10 +496,7 @@ export function DepartmentsManagement() {
             ) : departmentMembers && departmentMembers.length > 0 ? (
               <div className="space-y-3">
                 {departmentMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between rounded-lg border bg-muted/50 p-3"
-                  >
+                  <div key={member.id} className="flex items-center justify-between rounded-lg border bg-muted/50 p-3">
                     <div>
                       <div className="font-medium">{member.full_name}</div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -555,4 +539,3 @@ export function DepartmentsManagement() {
     </>
   );
 }
-

@@ -3,12 +3,13 @@
  * Usage: node scripts/reset-user-password.js <email> <new-password>
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 // Local Supabase configuration
-const supabaseUrl = 'http://127.0.0.1:54321';
+const supabaseUrl = "http://127.0.0.1:54321";
 // Service role key for admin operations
-const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+const serviceRoleKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
@@ -19,13 +20,13 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 
 async function resetPassword(email, newPassword) {
   if (!email || !newPassword) {
-    console.error('❌ Please provide both email and new password');
-    console.log('Usage: node scripts/reset-user-password.js <email> <new-password>');
+    console.error("❌ Please provide both email and new password");
+    console.log("Usage: node scripts/reset-user-password.js <email> <new-password>");
     process.exit(1);
   }
 
   if (newPassword.length < 6) {
-    console.error('❌ Password must be at least 6 characters long');
+    console.error("❌ Password must be at least 6 characters long");
     process.exit(1);
   }
 
@@ -35,7 +36,7 @@ async function resetPassword(email, newPassword) {
   const { data: users, error: listError } = await supabase.auth.admin.listUsers();
 
   if (listError) {
-    console.error('❌ Error listing users:', listError);
+    console.error("❌ Error listing users:", listError);
     process.exit(1);
   }
 
@@ -69,10 +70,10 @@ const email = process.argv[2];
 const password = process.argv[3];
 resetPassword(email, password)
   .then(() => {
-    console.log('\n✅ Done');
+    console.log("\n✅ Done");
     process.exit(0);
   })
   .catch((error) => {
-    console.error('\n❌ Error:', error);
+    console.error("\n❌ Error:", error);
     process.exit(1);
   });

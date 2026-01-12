@@ -6,13 +6,13 @@ import { CreateTaskForm } from "./CreateTaskForm";
 
 /**
  * CreateTaskModal component - modal dialog for creating new tasks
- * 
+ *
  * Provides:
  * - Trigger button with Plus icon
  * - Dialog/modal with CreateTaskForm
  * - Auto-close on successful creation
  * - Cancel functionality
- * 
+ *
  * @example
  * ```tsx
  * <CreateTaskModal />
@@ -24,15 +24,14 @@ export function CreateTaskModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button data-test-id="task-create-button">
           <Plus className="mr-2 h-4 w-4" />
-          Nowe zadanie
+          Dodaj zadanie
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" data-test-id="task-dialog">
         <CreateTaskForm onSuccess={() => setOpen(false)} onCancel={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
 }
-

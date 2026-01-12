@@ -84,12 +84,7 @@ export function CreateTimeLogForm({ tasks, onSuccess, onCancel }: CreateTimeLogF
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="task">Zadanie</Label>
-        <Select
-          id="task"
-          value={taskId}
-          onChange={(e) => setTaskId(e.target.value)}
-          required
-        >
+        <Select id="task" value={taskId} onChange={(e) => setTaskId(e.target.value)} required>
           <option value="">Wybierz zadanie</option>
           {tasks.map((task) => (
             <option key={task.id} value={task.id}>
@@ -101,13 +96,7 @@ export function CreateTimeLogForm({ tasks, onSuccess, onCancel }: CreateTimeLogF
 
       <div className="space-y-2">
         <Label htmlFor="date">Data</Label>
-        <Input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
+        <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -125,11 +114,7 @@ export function CreateTimeLogForm({ tasks, onSuccess, onCancel }: CreateTimeLogF
 
         <div className="space-y-2">
           <Label htmlFor="duration">Czas trwania (min)</Label>
-          <Select
-            id="duration"
-            value={duration.toString()}
-            onChange={(e) => setDuration(Number(e.target.value))}
-          >
+          <Select id="duration" value={duration.toString()} onChange={(e) => setDuration(Number(e.target.value))}>
             <option value="15">15 min</option>
             <option value="30">30 min</option>
             <option value="45">45 min</option>
@@ -169,4 +154,3 @@ export function CreateTimeLogForm({ tasks, onSuccess, onCancel }: CreateTimeLogF
     </form>
   );
 }
-

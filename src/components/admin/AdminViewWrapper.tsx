@@ -13,4 +13,3 @@ export function AdminViewWrapper({ initialUser }: AdminViewWrapperProps) {
     </AppProviders>
   );
 }
-

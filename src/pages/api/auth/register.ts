@@ -57,12 +57,9 @@ export const POST: APIRoute = async ({ request }) => {
     const supabaseAdmin = createAdminClient();
 
     // Validate invitation token
-    const { data: validationResult, error: validationError } = await supabaseAdmin.rpc(
-      "validate_invitation_token",
-      {
-        p_token: token,
-      }
-    );
+    const { data: validationResult, error: validationError } = await supabaseAdmin.rpc("validate_invitation_token", {
+      p_token: token,
+    });
 
     if (validationError) {
       console.error("Error validating invitation token:", validationError);
@@ -106,9 +103,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Check if user already exists in auth.users
     const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingAuthUser.users.some(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    const userExists = existingAuthUser.users.some((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     if (userExists) {
       return new Response(

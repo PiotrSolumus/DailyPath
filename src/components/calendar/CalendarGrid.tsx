@@ -34,23 +34,13 @@ export function CalendarGrid({ date, timezone, children }: CalendarGridProps) {
           {timeSlots.map((slot, index) => {
             const isHourStart = slot.getMinutes() === 0;
 
-            return (
-              <TimeSlot
-                key={index}
-                time={slot}
-                timezone={timezone}
-                isHourStart={isHourStart}
-              />
-            );
+            return <TimeSlot key={index} time={slot} timezone={timezone} isHourStart={isHourStart} />;
           })}
         </div>
 
         {/* Task slots overlay */}
-        <div className="absolute inset-0">
-          {children}
-        </div>
+        <div className="absolute inset-0">{children}</div>
       </div>
     </div>
   );
 }
-

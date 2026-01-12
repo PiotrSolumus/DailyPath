@@ -88,13 +88,10 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     await updateTimeLog(locals.supabaseAdmin, locals.user.id, timeLogId, validation.data);
 
     // 6. Return successful response
-    return new Response(
-      JSON.stringify({ message: "Time log updated successfully" }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ message: "Time log updated successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // 7. Handle errors with centralized error handler
     return handleApiError(error);
@@ -137,16 +134,12 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     await deleteTimeLog(locals.supabaseAdmin, locals.user.id, timeLogId);
 
     // 4. Return successful response
-    return new Response(
-      JSON.stringify({ message: "Time log deleted successfully" }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ message: "Time log deleted successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // 5. Handle errors with centralized error handler
     return handleApiError(error);
   }
 };
-

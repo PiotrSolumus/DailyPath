@@ -21,4 +21,3 @@ export function AppProviders({ children, initialUser }: AppProvidersProps) {
     </NuqsAdapter>
   );
 }
-

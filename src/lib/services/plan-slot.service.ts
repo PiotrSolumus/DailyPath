@@ -45,7 +45,7 @@ export async function listPlanSlots(
     // to account for timezone differences. The frontend will do the precise day filtering.
     const startDate = new Date(`${filters.start_date}T00:00:00.000Z`);
     const endDate = new Date(`${filters.end_date}T23:59:59.999Z`);
-    
+
     // Add 24 hours buffer on each side to catch edge cases with timezones
     const bufferMs = 24 * 60 * 60 * 1000;
     const startWithBuffer = new Date(startDate.getTime() - bufferMs);
@@ -71,7 +71,9 @@ export async function listPlanSlots(
       allow_overlap: slot.allow_overlap,
     }));
 
-    console.log(`Found ${planSlotDTOs.length} plan slots for user ${userId} between ${filters.start_date} and ${filters.end_date}`);
+    console.log(
+      `Found ${planSlotDTOs.length} plan slots for user ${userId} between ${filters.start_date} and ${filters.end_date}`
+    );
     return planSlotDTOs;
   } catch (error) {
     console.error("Error in listPlanSlots service:", error);
@@ -144,7 +146,7 @@ export async function createPlanSlot(
       if (existingSlots && existingSlots.length > 0) {
         for (const slot of existingSlots) {
           const { start: existingStart, end: existingEnd } = parsePgRange(slot.period as string);
-          
+
           // Check if ranges overlap: (start1 < end2) AND (start2 < end1)
           if (start < existingEnd && existingStart < end) {
             throw new Error("Plan slot overlaps with existing slot. Set allow_overlap to true to force.");
@@ -154,11 +156,7 @@ export async function createPlanSlot(
     }
 
     // 4. Verify task exists and user has access to it
-    const { data: task, error: taskError } = await supabase
-      .from("tasks")
-      .select("id")
-      .eq("id", data.task_id)
-      .single();
+    const { data: task, error: taskError } = await supabase.from("tasks").select("id").eq("id", data.task_id).single();
 
     if (taskError || !task) {
       throw new Error("Task not found or access denied");
@@ -173,11 +171,7 @@ export async function createPlanSlot(
       created_by_user_id: currentUserId,
     };
 
-    const { data: slot, error } = await supabase
-      .from("plan_slots")
-      .insert(insertData)
-      .select("id")
-      .single();
+    const { data: slot, error } = await supabase.from("plan_slots").insert(insertData).select("id").single();
 
     if (error) {
       console.error("Error creating plan slot:", error);
@@ -242,19 +236,16 @@ export async function updatePlanSlot(
 
     // 3. Update slot
     const updateData: Partial<Database["public"]["Tables"]["plan_slots"]["Update"]> = {};
-    
+
     if (updates.period !== undefined) {
       updateData.period = updates.period;
     }
-    
+
     if (updates.allow_overlap !== undefined) {
       updateData.allow_overlap = updates.allow_overlap;
     }
 
-    const { error } = await supabase
-      .from("plan_slots")
-      .update(updateData)
-      .eq("id", slotId);
+    const { error } = await supabase.from("plan_slots").update(updateData).eq("id", slotId);
 
     if (error) {
       console.error("Error updating plan slot:", error);
@@ -280,10 +271,7 @@ export async function deletePlanSlot(
   slotId: string
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from("plan_slots")
-      .delete()
-      .eq("id", slotId);
+    const { error } = await supabase.from("plan_slots").delete().eq("id", slotId);
 
     if (error) {
       console.error("Error deleting plan slot:", error);
@@ -294,4 +282,3 @@ export async function deletePlanSlot(
     throw error;
   }
 }
-

@@ -67,4 +67,3 @@ export function formatValidationErrors(errors: Record<string, string[]>): string
 
   return `Błędy walidacji: ${messages}`;
 }
-

@@ -123,7 +123,7 @@ export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
   const filteredMembers = members?.filter(
     (member) =>
       member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      member.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -169,4 +169,3 @@ export function TeamView({ departmentId, onViewMemberPlan }: TeamViewProps) {
     </>
   );
 }
-

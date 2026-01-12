@@ -64,7 +64,7 @@ export function PlanCalendar({
         distance: 8,
       },
     }),
-    useSensor(KeyboardSensor),
+    useSensor(KeyboardSensor)
   );
 
   // Map tasks by ID for quick lookup
@@ -195,7 +195,7 @@ export function PlanCalendar({
 
                 // Check if slot is in current week
                 const { start: weekStart, end: weekEnd } = getWeekBoundaries(currentDate);
-                
+
                 if (start < weekStart || start >= weekEnd) {
                   return null;
                 }
@@ -243,4 +243,3 @@ export function PlanCalendar({
     </div>
   );
 }
-

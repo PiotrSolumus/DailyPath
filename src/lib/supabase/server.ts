@@ -21,7 +21,7 @@ export function createClient(cookies: AstroCookies, headers?: Headers) {
       getAll() {
         // Use Supabase's parseCookieHeader if headers are available
         if (headers) {
-          const cookieHeader = headers.get('cookie');
+          const cookieHeader = headers.get("cookie");
           if (cookieHeader) {
             return parseCookieHeader(cookieHeader);
           }

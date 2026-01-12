@@ -71,12 +71,13 @@ export const GET: APIRoute = async ({ locals }) => {
         // Count active memberships (where upper(period) IS NULL - open-ended range)
         // Since Supabase doesn't support SQL functions directly in queries,
         // we filter in JavaScript
-        const memberCount = memberships?.filter((m) => {
-          // In PostgreSQL, an open-ended range has no upper bound
-          // This is represented in the period string, e.g., "[2024-01-01,)"
-          const periodStr = m.period as string;
-          return periodStr && periodStr.endsWith(",)");
-        }).length || 0;
+        const memberCount =
+          memberships?.filter((m) => {
+            // In PostgreSQL, an open-ended range has no upper bound
+            // This is represented in the period string, e.g., "[2024-01-01,)"
+            const periodStr = m.period as string;
+            return periodStr && periodStr.endsWith(",)");
+          }).length || 0;
 
         // Get department managers
         const { data: managers } = await supabaseAdmin
@@ -177,11 +178,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { name } = validation.data;
 
     // Check if department with this name already exists
-    const { data: existingDept } = await supabaseAdmin
-      .from("departments")
-      .select("id")
-      .eq("name", name)
-      .single();
+    const { data: existingDept } = await supabaseAdmin.from("departments").select("id").eq("name", name).single();
 
     if (existingDept) {
       return new Response(
@@ -245,4 +242,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   }
 };
-

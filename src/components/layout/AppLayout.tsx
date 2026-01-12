@@ -21,4 +21,3 @@ export function AppLayout({ children, initialUser, currentPath }: AppLayoutProps
     </AppProviders>
   );
 }
-

@@ -59,8 +59,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message:
-          "Jeśli konto o podanym adresie email istnieje, wysłaliśmy link do resetu hasła.",
+        message: "Jeśli konto o podanym adresie email istnieje, wysłaliśmy link do resetu hasła.",
       }),
       {
         status: 200,

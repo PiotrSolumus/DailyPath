@@ -10,4 +10,3 @@ const user = requireAuth(Astro);
 <AppLayout title="Czas pracy - DailyPath" user={user}>
   <TimeLogsViewWrapper client:load initialUser={user} />
 </AppLayout>
-

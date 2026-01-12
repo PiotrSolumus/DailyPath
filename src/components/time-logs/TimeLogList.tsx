@@ -28,7 +28,11 @@ async function fetchTimeLogs(filters: Record<string, string | undefined>): Promi
 }
 
 export function TimeLogList({ filters = {}, onEdit, onDelete }: TimeLogListProps) {
-  const { data: timeLogs, isLoading, error } = useQuery({
+  const {
+    data: timeLogs,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["time-logs", filters],
     queryFn: () => fetchTimeLogs(filters),
   });
@@ -60,14 +64,8 @@ export function TimeLogList({ filters = {}, onEdit, onDelete }: TimeLogListProps
   return (
     <div className="space-y-3">
       {timeLogs.map((timeLog) => (
-        <TimeLogCard 
-          key={timeLog.id} 
-          timeLog={timeLog} 
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        <TimeLogCard key={timeLog.id} timeLog={timeLog} onEdit={onEdit} onDelete={onDelete} />
       ))}
     </div>
   );
 }
-

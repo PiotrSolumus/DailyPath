@@ -85,9 +85,7 @@ export function RegisterForm({ invitationToken, invitationEmail }: RegisterFormP
       <CardHeader>
         <CardTitle>Utwórz konto</CardTitle>
         <CardDescription>
-          {invitationToken
-            ? "Wypełnij formularz, aby aktywować swoje konto"
-            : "Zarejestruj się w DailyPath"}
+          {invitationToken ? "Wypełnij formularz, aby aktywować swoje konto" : "Zarejestruj się w DailyPath"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -146,9 +144,7 @@ export function RegisterForm({ invitationToken, invitationEmail }: RegisterFormP
               disabled={isLoading}
               minLength={6}
             />
-            <p className="text-xs text-muted-foreground">
-              Hasło musi mieć co najmniej 6 znaków
-            </p>
+            <p className="text-xs text-muted-foreground">Hasło musi mieć co najmniej 6 znaków</p>
           </div>
 
           <div className="space-y-2">

@@ -295,10 +295,10 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
     // Ensure department exists
     const { data: department } = await supabaseAdmin.from("departments").select("id").eq("id", department_id).single();
     if (!department) {
-      return new Response(
-        JSON.stringify({ error: "Not found", message: "Dział nie został znaleziony" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Not found", message: "Dział nie został znaleziony" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Find active membership in department
@@ -392,4 +392,3 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
     );
   }
 };
-

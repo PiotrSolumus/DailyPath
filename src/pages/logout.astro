@@ -14,7 +14,10 @@
     <title>Wylogowanie - DailyPath</title>
     <style>
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -37,23 +40,23 @@
       // Call logout API endpoint
       (async () => {
         try {
-          const response = await fetch('/api/auth/logout', {
-            method: 'POST',
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           });
 
           if (response.ok) {
-            console.log('✅ Logged out successfully');
+            console.log("✅ Logged out successfully");
           } else {
-            console.error('❌ Logout failed');
+            console.error("❌ Logout failed");
           }
         } catch (error) {
-          console.error('❌ Logout error:', error);
+          console.error("❌ Logout error:", error);
         } finally {
           // Always redirect to login page
-          window.location.href = '/login?message=Wylogowano pomyślnie';
+          window.location.href = "/login?message=Wylogowano pomyślnie";
         }
       })();
     </script>

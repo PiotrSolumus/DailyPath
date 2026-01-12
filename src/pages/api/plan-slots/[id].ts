@@ -91,13 +91,10 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     await updatePlanSlot(locals.supabaseAdmin, locals.user.id, slotId, validation.data);
 
     // 6. Return successful response
-    return new Response(
-      JSON.stringify({ message: "Plan slot updated successfully" }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ message: "Plan slot updated successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // 7. Handle errors with centralized error handler
     return handleApiError(error);
@@ -148,4 +145,3 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     return handleApiError(error);
   }
 };
-

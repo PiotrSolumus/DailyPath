@@ -100,10 +100,7 @@ export function LoginForm({ redirect = "/dashboard", initialMessage }: LoginForm
         </form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-2">
-        <a
-          href="/reset-password"
-          className="text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
+        <a href="/reset-password" className="text-sm text-muted-foreground hover:text-primary transition-colors">
           Nie pamiętasz hasła?
         </a>
       </CardFooter>

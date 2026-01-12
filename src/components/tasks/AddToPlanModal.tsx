@@ -5,14 +5,7 @@ import { format, addMinutes, startOfDay, setHours, setMinutes } from "date-fns";
 import { pl } from "date-fns/locale";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { formatPgRange, roundTo15Min } from "../../lib/utils/time";
@@ -78,7 +71,7 @@ export function AddToPlanModal({ task, open, onOpenChange, userId }: AddToPlanMo
   // Initialize with today and next rounded 15-min slot
   const now = new Date();
   const roundedNow = roundTo15Min(addMinutes(now, 15));
-  
+
   const [selectedDate, setSelectedDate] = useState<string>(format(now, "yyyy-MM-dd"));
   const [selectedTime, setSelectedTime] = useState<string>(format(roundedNow, "HH:mm"));
   const [duration, setDuration] = useState<number>(task.estimate_minutes);
@@ -91,9 +84,9 @@ export function AddToPlanModal({ task, open, onOpenChange, userId }: AddToPlanMo
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["plan-slots"] });
       // Invalidate all queries starting with "tasks" to refresh filtered lists
-      queryClient.invalidateQueries({ 
+      queryClient.invalidateQueries({
         queryKey: ["tasks"],
-        refetchType: "all"
+        refetchType: "all",
       });
       toast.success("Zadanie zostało dodane do planu");
       onOpenChange(false);
@@ -166,9 +159,7 @@ export function AddToPlanModal({ task, open, onOpenChange, userId }: AddToPlanMo
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Dodaj zadanie do planu</DialogTitle>
-          <DialogDescription>
-            Zaplanuj zadanie "{task.title}" w swoim kalendarzu
-          </DialogDescription>
+          <DialogDescription>Zaplanuj zadanie "{task.title}" w swoim kalendarzu</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -208,9 +199,7 @@ export function AddToPlanModal({ task, open, onOpenChange, userId }: AddToPlanMo
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
-                Godzina musi być wyrównana do 15 minut
-              </p>
+              <p className="text-xs text-muted-foreground">Godzina musi być wyrównana do 15 minut</p>
             </div>
 
             {/* Duration picker */}
@@ -265,4 +254,3 @@ export function AddToPlanModal({ task, open, onOpenChange, userId }: AddToPlanMo
     </Dialog>
   );
 }
-

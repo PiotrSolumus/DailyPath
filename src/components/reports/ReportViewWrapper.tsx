@@ -14,4 +14,3 @@ export function ReportViewWrapper({ initialFilters, initialUser }: ReportViewWra
     </AppProviders>
   );
 }
-

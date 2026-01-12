@@ -49,22 +49,17 @@ export function RequestPasswordResetForm() {
       <Card>
         <CardHeader>
           <CardTitle>Sprawdź swoją skrzynkę email</CardTitle>
-          <CardDescription>
-            Link do resetowania hasła został wysłany
-          </CardDescription>
+          <CardDescription>Link do resetowania hasła został wysłany</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="success">
             <AlertDescription>
-              Jeśli konto o podanym adresie email istnieje, wysłaliśmy link do resetu hasła.
-              Sprawdź swoją skrzynkę email i kliknij w link, aby ustawić nowe hasło.
+              Jeśli konto o podanym adresie email istnieje, wysłaliśmy link do resetu hasła. Sprawdź swoją skrzynkę
+              email i kliknij w link, aby ustawić nowe hasło.
             </AlertDescription>
           </Alert>
           <div className="mt-6 text-center">
-            <a
-              href="/login"
-              className="text-sm text-primary hover:underline"
-            >
+            <a href="/login" className="text-sm text-primary hover:underline">
               Wróć do logowania
             </a>
           </div>
@@ -77,9 +72,7 @@ export function RequestPasswordResetForm() {
     <Card>
       <CardHeader>
         <CardTitle>Reset hasła</CardTitle>
-        <CardDescription>
-          Podaj adres email powiązany z Twoim kontem
-        </CardDescription>
+        <CardDescription>Podaj adres email powiązany z Twoim kontem</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,10 +100,7 @@ export function RequestPasswordResetForm() {
           </Button>
 
           <div className="text-center">
-            <a
-              href="/login"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
+            <a href="/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Wróć do logowania
             </a>
           </div>

@@ -109,4 +109,3 @@ function SystemInfo() {
     </Card>
   );
 }
-

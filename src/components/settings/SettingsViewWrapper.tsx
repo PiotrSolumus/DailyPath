@@ -13,6 +13,3 @@ export function SettingsViewWrapper({ initialUser }: SettingsViewWrapperProps) {
     </AppProviders>
   );
 }
-
-
-

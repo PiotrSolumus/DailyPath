@@ -16,10 +16,10 @@ const user = requireAuth(Astro);
 
     <PlanViewWrapper client:load userId={user.id} timezone={user.timezone ?? "UTC"} initialUser={user}>
       <div class="flex items-center justify-center py-12" aria-busy="true" aria-live="polite">
-        <div class="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground">
+        </div>
         <span class="sr-only">Ładowanie planu dnia…</span>
       </div>
     </PlanViewWrapper>
   </div>
 </AppLayout>
-

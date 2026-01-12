@@ -15,13 +15,13 @@ interface CalendarControlsProps {
   onDateSelect?: (date: Date) => void;
 }
 
-export function CalendarControls({ 
-  currentDate, 
-  view, 
-  onViewChange, 
-  onNavigate, 
+export function CalendarControls({
+  currentDate,
+  view,
+  onViewChange,
+  onNavigate,
   onToday,
-  onDateSelect 
+  onDateSelect,
 }: CalendarControlsProps) {
   const [open, setOpen] = useState(false);
   const dateLabel = format(currentDate, view === "day" ? "EEEE, d MMMM yyyy" : "'Tydzień' w, yyyy", { locale: pl });
@@ -52,45 +52,26 @@ export function CalendarControls({
         {/* Date label with picker */}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className="h-auto p-2 hover:bg-accent"
-              aria-label="Wybierz datę"
-            >
+            <Button variant="ghost" className="h-auto p-2 hover:bg-accent" aria-label="Wybierz datę">
               <CalendarIcon className="mr-2 h-4 w-4" />
               <h2 className="text-lg font-semibold capitalize">{dateLabel}</h2>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={currentDate}
-              onSelect={handleDateSelect}
-              locale={pl}
-              initialFocus
-            />
+            <Calendar mode="single" selected={currentDate} onSelect={handleDateSelect} locale={pl} initialFocus />
           </PopoverContent>
         </Popover>
       </div>
 
       {/* View switcher */}
       <div className="flex items-center gap-1 rounded-lg border p-1">
-        <Button
-          variant={view === "day" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => onViewChange("day")}
-        >
+        <Button variant={view === "day" ? "default" : "ghost"} size="sm" onClick={() => onViewChange("day")}>
           Dzień
         </Button>
-        <Button
-          variant={view === "week" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => onViewChange("week")}
-        >
+        <Button variant={view === "week" ? "default" : "ghost"} size="sm" onClick={() => onViewChange("week")}>
           Tydzień
         </Button>
       </div>
     </div>
   );
 }
-

@@ -13,15 +13,15 @@ interface EditTaskModalProps {
 
 /**
  * EditTaskModal component - modal dialog for editing tasks
- * 
+ *
  * Provides:
  * - Dialog/modal with EditTaskForm
  * - Auto-close on successful update
  * - Cancel functionality
- * 
+ *
  * @example
  * ```tsx
- * <EditTaskModal 
+ * <EditTaskModal
  *   task={selectedTask}
  *   open={isOpen}
  *   onOpenChange={setIsOpen}
@@ -34,14 +34,8 @@ export function EditTaskModal({ task, open, onOpenChange }: EditTaskModalProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <EditTaskForm 
-          task={task}
-          onSuccess={() => onOpenChange(false)} 
-          onCancel={() => onOpenChange(false)} 
-        />
+        <EditTaskForm task={task} onSuccess={() => onOpenChange(false)} onCancel={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );
 }
-
-

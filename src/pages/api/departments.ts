@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 /**
  * GET /api/departments
- * 
+ *
  * List all departments (authenticated users)
  * Used for task assignment dropdowns
  */
@@ -63,4 +63,3 @@ export const GET: APIRoute = async ({ locals }) => {
     );
   }
 };
-

@@ -86,12 +86,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     // 4. Call service layer with validated parameters
     // Use admin client to bypass RLS since we've already verified authentication
-    const timeLogs = await listTimeLogs(
-      locals.supabaseAdmin,
-      locals.user.id,
-      locals.user.app_role,
-      scopedFilters
-    );
+    const timeLogs = await listTimeLogs(locals.supabaseAdmin, locals.user.id, locals.user.app_role, scopedFilters);
 
     // 5. Return successful response
     return new Response(JSON.stringify(timeLogs), {
@@ -148,16 +143,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const timeLogId = await createTimeLog(locals.supabaseAdmin, locals.user.id, validation.data);
 
     // 5. Return successful response
-    return new Response(
-      JSON.stringify({ id: timeLogId, message: "Time log created successfully" }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ id: timeLogId, message: "Time log created successfully" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // 6. Handle errors with centralized error handler
     return handleApiError(error);
   }
 };
-

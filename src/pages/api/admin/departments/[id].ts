@@ -45,19 +45,19 @@ export const GET: APIRoute = async ({ locals, params }) => {
 
     const departmentId = params.id;
     if (!departmentId) {
-      return new Response(
-        JSON.stringify({ error: "Bad request", message: "ID działu jest wymagane" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Bad request", message: "ID działu jest wymagane" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Ensure department exists
     const { data: department } = await supabaseAdmin.from("departments").select("id").eq("id", departmentId).single();
     if (!department) {
-      return new Response(
-        JSON.stringify({ error: "Not found", message: "Dział nie został znaleziony" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Not found", message: "Dział nie został znaleziony" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Get memberships and resolve active ones in JS
@@ -187,11 +187,7 @@ export const PATCH: APIRoute = async ({ request, locals, params }) => {
     const { name } = validation.data;
 
     // Check if department exists
-    const { data: existingDept } = await supabaseAdmin
-      .from("departments")
-      .select("id")
-      .eq("id", departmentId)
-      .single();
+    const { data: existingDept } = await supabaseAdmin.from("departments").select("id").eq("id", departmentId).single();
 
     if (!existingDept) {
       return new Response(
@@ -326,11 +322,7 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     }
 
     // Check if department exists
-    const { data: existingDept } = await supabaseAdmin
-      .from("departments")
-      .select("id")
-      .eq("id", departmentId)
-      .single();
+    const { data: existingDept } = await supabaseAdmin.from("departments").select("id").eq("id", departmentId).single();
 
     if (!existingDept) {
       return new Response(
@@ -352,10 +344,11 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
       .eq("department_id", departmentId);
 
     // Count active memberships (where upper(period) IS NULL - open-ended range)
-    const activeMemberCount = memberships?.filter((m) => {
-      const periodStr = m.period as string;
-      return periodStr && periodStr.endsWith(",)");
-    }).length || 0;
+    const activeMemberCount =
+      memberships?.filter((m) => {
+        const periodStr = m.period as string;
+        return periodStr && periodStr.endsWith(",)");
+      }).length || 0;
 
     if (activeMemberCount > 0) {
       return new Response(
@@ -411,4 +404,3 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     );
   }
 };
-

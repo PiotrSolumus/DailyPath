@@ -8,4 +8,3 @@ export function OnboardingWizardWrapper() {
     </AppProviders>
   );
 }
-

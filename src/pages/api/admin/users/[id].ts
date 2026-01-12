@@ -63,10 +63,10 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
       .maybeSingle();
 
     if (!existingUser) {
-      return new Response(
-        JSON.stringify({ error: "Not found", message: "Użytkownik nie został znaleziony" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Not found", message: "Użytkownik nie został znaleziony" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Close active memberships
@@ -77,10 +77,10 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 
     if (membershipsError) {
       console.error("Error fetching memberships for user delete:", membershipsError);
-      return new Response(
-        JSON.stringify({ error: "Database error", message: "Nie udało się pobrać członkostw" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Database error", message: "Nie udało się pobrać członkostw" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (memberships?.length) {
@@ -88,15 +88,15 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
       for (const membership of memberships) {
         const period = membership.period as string;
         if (typeof period !== "string") continue;
-        
+
         const { lower, upper } = parsePeriodBounds(period);
         if (!lower) continue;
-        
+
         // Close only open-ended or future-upper memberships
         if (!upper || today < upper) {
           // Skip if membership starts in the future
           if (today < lower) continue;
-          
+
           const closedPeriod = `[${lower},${today})`;
           const { error: updateError } = await supabaseAdmin
             .from("memberships")
@@ -122,10 +122,10 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 
     if (managersDeleteError) {
       console.error("Error removing manager mappings:", managersDeleteError);
-      return new Response(
-        JSON.stringify({ error: "Database error", message: "Nie udało się usunąć ról managera" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Database error", message: "Nie udało się usunąć ról managera" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Soft delete user
@@ -136,16 +136,16 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
 
     if (userUpdateError) {
       console.error("Error deactivating user:", userUpdateError);
-      return new Response(
-        JSON.stringify({ error: "Database error", message: "Nie udało się usunąć użytkownika" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Database error", message: "Nie udało się usunąć użytkownika" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ message: "Użytkownik został usunięty (dezaktywowany)" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ message: "Użytkownik został usunięty (dezaktywowany)" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Unexpected error in DELETE /api/admin/users/:id:", error);
     return new Response(
@@ -157,4 +157,3 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
     );
   }
 };
-

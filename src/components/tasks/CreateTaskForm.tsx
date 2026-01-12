@@ -23,12 +23,15 @@ interface CreateTaskFormProps {
 /**
  * Create a new task and optionally a plan slot via API
  */
-async function createTask(data: CreateTaskCommand & { plan_now?: boolean, plan_date?: string, plan_time?: string }): Promise<void> {
+async function createTask(
+  data: CreateTaskCommand & { plan_now?: boolean; plan_date?: string; plan_time?: string }
+): Promise<void> {
   const { plan_now, plan_date, plan_time, ...taskData } = data;
-  
+
   const response = await fetch("/api/tasks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(taskData),
   });
 
@@ -91,7 +94,7 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
       // Invalidate all queries starting with "tasks" or "plan-slots"
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["plan-slots"] });
-      
+
       toast.success("Zadanie zostało utworzone" + (formData.plan_now ? " i dodane do planu" : ""));
       onSuccess?.();
     },
@@ -101,25 +104,28 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
   });
 
   // Memoize submit handler
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate time if planning now
-    if (formData.plan_now) {
-      const [hours, minutes] = formData.plan_time.split(":").map(Number);
-      if (minutes % 15 !== 0) {
-        toast.error("Godzina rozpoczęcia musi być wielokrotnością 15 minut");
-        return;
-      }
-    }
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const dataToSubmit = {
-      ...formData,
-      description: formData.description.trim() || null,
-      assigned_by_user_id: user?.id,
-    };
-    mutation.mutate(dataToSubmit as any);
-  }, [formData, mutation, user]);
+      // Validate time if planning now
+      if (formData.plan_now) {
+        const [hours, minutes] = formData.plan_time.split(":").map(Number);
+        if (minutes % 15 !== 0) {
+          toast.error("Godzina rozpoczęcia musi być wielokrotnością 15 minut");
+          return;
+        }
+      }
+
+      const dataToSubmit = {
+        ...formData,
+        description: formData.description.trim() || null,
+        assigned_by_user_id: user?.id,
+      };
+      mutation.mutate(dataToSubmit as any);
+    },
+    [formData, mutation, user]
+  );
 
   // Generate time options
   const timeOptions = useMemo(() => {
@@ -133,16 +139,17 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} data-test-id="task-form">
       <DialogHeader>
-        <DialogTitle>Nowe zadanie</DialogTitle>
+        <DialogTitle data-test-id="task-dialog-title">Nowe zadanie</DialogTitle>
       </DialogHeader>
 
       <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
         <div className="space-y-2">
-          <Label htmlFor="title">Nazwa *</Label>
+          <Label htmlFor="title" data-test-id="task-title-label">Nazwa *</Label>
           <Input
             id="title"
+            data-test-id="task-title-input"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
@@ -151,9 +158,10 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Opis</Label>
+          <Label htmlFor="description" data-test-id="task-description-label">Opis</Label>
           <textarea
             id="description"
+            data-test-id="task-description-input"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Wprowadź opis zadania"
@@ -202,9 +210,15 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
 
         <AssigneeSelector
           assignedToType={formData.assigned_to_type}
-          assignedUserId={formData.assigned_to_type === "user" ? ((formData as any).assigned_id || user?.id || null) : null}
-          assignedDepartmentId={formData.assigned_to_type === "department" ? ((formData as any).assigned_id || null) : null}
-          onChange={(type, id) => setFormData({ ...formData, assigned_to_type: type, assigned_id: id || undefined } as any)}
+          assignedUserId={
+            formData.assigned_to_type === "user" ? (formData as any).assigned_id || user?.id || null : null
+          }
+          assignedDepartmentId={
+            formData.assigned_to_type === "department" ? (formData as any).assigned_id || null : null
+          }
+          onChange={(type, id) =>
+            setFormData({ ...formData, assigned_to_type: type, assigned_id: id || undefined } as any)
+          }
           currentUserId={user?.id}
           required={true}
         />
@@ -258,7 +272,9 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
                   required={formData.plan_now}
                 >
                   {timeOptions.map((time) => (
-                    <option key={time} value={time}>{time}</option>
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -269,11 +285,11 @@ export function CreateTaskForm({ onSuccess, onCancel }: CreateTaskFormProps) {
 
       <DialogFooter>
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} data-test-id="task-cancel-button">
             Anuluj
           </Button>
         )}
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button type="submit" disabled={mutation.isPending} data-test-id="task-save-button">
           {mutation.isPending ? "Tworzenie..." : "Utwórz zadanie"}
         </Button>
       </DialogFooter>

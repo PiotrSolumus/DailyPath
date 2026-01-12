@@ -131,10 +131,7 @@ export async function sendInvitationEmail({
 /**
  * Send password reset email
  */
-export async function sendPasswordResetEmail({
-  to,
-  resetUrl,
-}: SendPasswordResetEmailParams): Promise<boolean> {
+export async function sendPasswordResetEmail({ to, resetUrl }: SendPasswordResetEmailParams): Promise<boolean> {
   const subject = "Reset hasła - DailyPath";
   const html = `
 <!DOCTYPE html>

@@ -30,7 +30,10 @@ export function WorkingHoursStep({ data, onChange }: WorkingHoursStepProps) {
           {dayNames.map((name, index) => {
             const dayValue = index + 1;
             return (
-              <label key={dayValue} className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent">
+              <label
+                key={dayValue}
+                className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
+              >
                 <input
                   type="checkbox"
                   checked={data.days.includes(dayValue)}
@@ -83,4 +86,3 @@ export function WorkingHoursStep({ data, onChange }: WorkingHoursStepProps) {
     </div>
   );
 }
-

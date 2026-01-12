@@ -65,4 +65,3 @@ export function flattenForCSV(data: Record<string, unknown>[]): Record<string, u
     return flattened;
   });
 }
-

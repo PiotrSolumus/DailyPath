@@ -142,24 +142,15 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     // 4. Call service layer to create plan slot
     // Use admin client to bypass RLS since we've already verified authentication
-    const slotId = await createPlanSlot(
-      locals.supabaseAdmin,
-      locals.user.id,
-      locals.user.app_role,
-      validation.data
-    );
+    const slotId = await createPlanSlot(locals.supabaseAdmin, locals.user.id, locals.user.app_role, validation.data);
 
     // 5. Return successful response
-    return new Response(
-      JSON.stringify({ id: slotId, message: "Plan slot created successfully" }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ id: slotId, message: "Plan slot created successfully" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // 6. Handle errors with centralized error handler
     return handleApiError(error);
   }
 };
-

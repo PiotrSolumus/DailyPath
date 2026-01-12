@@ -44,4 +44,3 @@ export function TimezoneStep({ timezone, onChange }: TimezoneStepProps) {
     </div>
   );
 }
-

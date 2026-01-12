@@ -1,0 +1,232 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Lintowanie kodu
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+  # Testy jednostkowe z coverage
+  test-unit:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit and integration tests with coverage
+        run: npm run test:coverage
+        env:
+          CI: true
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Testy E2E z coverage
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        env:
+          CI: true
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          NODE_ENV: integration
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload Playwright test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
+
+  # Status comment do PR (tylko jeśli wszystkie testy przeszły)
+  status-comment:
+    name: PR Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit, test-e2e]
+    if: always() && needs.lint.result == 'success' && needs.test-unit.result == 'success' && needs.test-e2e.result == 'success'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+
+      - name: Generate status comment
+        uses: actions/github-script@v7
+        env:
+          LINT_STATUS: ${{ needs.lint.result }}
+          UNIT_TEST_STATUS: ${{ needs.test-unit.result }}
+          E2E_TEST_STATUS: ${{ needs.test-e2e.result }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read coverage summary if available
+            let coverageInfo = '';
+            try {
+              const coveragePath = path.join('coverage', 'coverage-summary.json');
+              if (fs.existsSync(coveragePath)) {
+                const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
+                const total = coverage.total;
+                coverageInfo = `
+            ### 📊 Unit Test Coverage
+            
+            | Metric | Coverage | Status |
+            |--------|----------|--------|
+            | Lines | ${total.lines.pct}% | ${total.lines.pct >= 70 ? '✅' : '⚠️'} |
+            | Statements | ${total.statements.pct}% | ${total.statements.pct >= 70 ? '✅' : '⚠️'} |
+            | Functions | ${total.functions.pct}% | ${total.functions.pct >= 70 ? '✅' : '⚠️'} |
+            | Branches | ${total.branches.pct}% | ${total.branches.pct >= 70 ? '✅' : '⚠️'} |
+            `;
+              }
+            } catch (error) {
+              console.log('Could not read coverage summary:', error.message);
+            }
+            
+            const lintStatus = process.env.LINT_STATUS === 'success' ? '✅' : '❌';
+            const unitStatus = process.env.UNIT_TEST_STATUS === 'success' ? '✅' : '❌';
+            const e2eStatus = process.env.E2E_TEST_STATUS === 'success' ? '✅' : '❌';
+            
+            const comment = `## ✅ All Pull Request Checks Passed
+            
+            All checks have completed successfully:
+            
+            - ${lintStatus} **Lint**: Code linting passed
+            - ${unitStatus} **Unit Tests**: All unit and integration tests passed
+            - ${e2eStatus} **E2E Tests**: All end-to-end tests passed (Chromium)
+            ${coverageInfo}
+            ### 📦 Test Artifacts
+            
+            - **Unit Test Coverage**: Available in workflow artifacts (\`unit-test-coverage\`)
+            - **E2E Test Reports**: Available in workflow artifacts (\`playwright-report\` and \`playwright-test-results\`)
+            
+            ---
+            *This comment was automatically generated by GitHub Actions workflow*`;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.data.find(
+              comment => comment.user.type === 'Bot' && comment.body.includes('All Pull Request Checks Passed')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment,
+              });
+            }

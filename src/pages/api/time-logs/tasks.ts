@@ -30,9 +30,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { id: userId, app_role: userRole, active_department } = locals.user;
 
     // Ustal aktywny dział użytkownika (z locals albo z bazy jako rezerwowe źródło)
-    const departmentId =
-      active_department?.id ??
-      (await getUserDepartment(locals.supabaseAdmin, userId));
+    const departmentId = active_department?.id ?? (await getUserDepartment(locals.supabaseAdmin, userId));
 
     // 1) Zadania przypisane bezpośrednio do użytkownika
     const userTasks = await listTasks(locals.supabaseAdmin, userId, userRole, {
@@ -65,6 +63,3 @@ export const GET: APIRoute = async ({ locals }) => {
     return handleApiError(error);
   }
 };
-
-
-

@@ -4,7 +4,11 @@ import { getManagerDepartments, getUserDepartment } from "@/lib/services/auth.se
 
 export const prerender = false;
 
-type RangeParts = { start: Date; end: Date; minutes: number };
+interface RangeParts {
+  start: Date;
+  end: Date;
+  minutes: number;
+}
 
 function parseDate(value: string | undefined, fallbackDaysAgo = 7): Date {
   if (value) {
@@ -60,7 +64,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       {
         status: 401,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 
@@ -103,7 +107,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
           // Not authorized to view this user
           return new Response(
             JSON.stringify({ error: "Forbidden", message: "Brak uprawnień do podglądu tego użytkownika" }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
+            { status: 403, headers: { "Content-Type": "application/json" } }
           );
         }
       }
@@ -112,9 +116,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
   // Optional department filter (informational)
   const scopedDepartmentId =
-    requestedDepartmentId ??
-    user.active_department?.id ??
-    (await getUserDepartment(supabase, scopedUserId));
+    requestedDepartmentId ?? user.active_department?.id ?? (await getUserDepartment(supabase, scopedUserId));
   const scopedDepartment =
     scopedDepartmentId && scopedDepartmentId !== "null"
       ? await supabase.from("departments").select("id, name").eq("id", scopedDepartmentId).maybeSingle()
@@ -193,9 +195,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     // 4) Fetch tasks for status summary
     const allTaskIds = Array.from(new Set(Array.from(dayMap.values()).flatMap((d) => Array.from(d.taskIds))));
-    const tasks = allTaskIds.length
-      ? await getTasksByIds(supabase, user.id, userRole, allTaskIds)
-      : [];
+    const tasks = allTaskIds.length ? await getTasksByIds(supabase, user.id, userRole, allTaskIds) : [];
     const taskStatusMap = new Map(tasks.map((t) => [t.id, t.status]));
 
     // 5) Build response
@@ -240,10 +240,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 };
-
-
-

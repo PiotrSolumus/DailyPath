@@ -7,7 +7,11 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(({ className, ...pr
   return (
     <label
       ref={ref}
-      className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)}
+      data-test-id={props["data-test-id"] || (props.htmlFor ? `label-${props.htmlFor}` : "label")}
+      className={cn(
+        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        className
+      )}
       {...props}
     />
   );
@@ -15,4 +19,3 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(({ className, ...pr
 Label.displayName = "Label";
 
 export { Label };
-

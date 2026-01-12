@@ -45,4 +45,3 @@ export function MemberPlanModal({ open, memberId, memberName, timezone, onClose 
     </div>
   );
 }
-

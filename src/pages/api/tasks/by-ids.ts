@@ -9,7 +9,12 @@ const querySchema = z.object({
   ids: z
     .string()
     .min(1, "ids is required")
-    .transform((v) => v.split(",").map((s) => s.trim()).filter(Boolean))
+    .transform((v) =>
+      v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    )
     .pipe(z.array(z.string().uuid()).min(1, "ids must include at least one UUID").max(200, "Too many ids")),
 });
 
@@ -51,12 +56,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       );
     }
 
-    const tasks = await getTasksByIds(
-      locals.supabaseAdmin,
-      locals.user.id,
-      locals.user.app_role,
-      validation.data.ids
-    );
+    const tasks = await getTasksByIds(locals.supabaseAdmin, locals.user.id, locals.user.app_role, validation.data.ids);
 
     return new Response(JSON.stringify(tasks), {
       status: 200,
@@ -69,6 +69,3 @@ export const GET: APIRoute = async ({ locals, url }) => {
     return handleApiError(error);
   }
 };
-
-
-

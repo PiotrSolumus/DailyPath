@@ -72,22 +72,16 @@ export function SetNewPasswordForm({ token }: SetNewPasswordFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Hasło zostało zmienione</CardTitle>
-          <CardDescription>
-            Możesz teraz zalogować się przy użyciu nowego hasła
-          </CardDescription>
+          <CardDescription>Możesz teraz zalogować się przy użyciu nowego hasła</CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="success">
             <AlertDescription>
-              Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany
-              do strony logowania.
+              Twoje hasło zostało pomyślnie zmienione. Za chwilę zostaniesz przekierowany do strony logowania.
             </AlertDescription>
           </Alert>
           <div className="mt-6 text-center">
-            <a
-              href="/login"
-              className="text-sm text-primary hover:underline"
-            >
+            <a href="/login" className="text-sm text-primary hover:underline">
               Przejdź do logowania
             </a>
           </div>
@@ -100,9 +94,7 @@ export function SetNewPasswordForm({ token }: SetNewPasswordFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>Ustaw nowe hasło</CardTitle>
-        <CardDescription>
-          Wprowadź nowe hasło dla swojego konta
-        </CardDescription>
+        <CardDescription>Wprowadź nowe hasło dla swojego konta</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,9 +116,7 @@ export function SetNewPasswordForm({ token }: SetNewPasswordFormProps) {
               disabled={isLoading}
               minLength={6}
             />
-            <p className="text-xs text-muted-foreground">
-              Hasło musi mieć co najmniej 6 znaków
-            </p>
+            <p className="text-xs text-muted-foreground">Hasło musi mieć co najmniej 6 znaków</p>
           </div>
 
           <div className="space-y-2">

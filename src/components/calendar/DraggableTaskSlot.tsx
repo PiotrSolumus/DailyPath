@@ -47,13 +47,7 @@ export function DraggableTaskSlot({
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      className="absolute left-0 right-0"
-      style={style} 
-      {...attributes} 
-      {...listeners}
-    >
+    <div ref={setNodeRef} className="absolute left-0 right-0" style={style} {...attributes} {...listeners}>
       <TaskSlot
         task={task}
         startTime={startTime}
@@ -66,4 +60,3 @@ export function DraggableTaskSlot({
     </div>
   );
 }
-

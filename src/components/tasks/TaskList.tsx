@@ -39,7 +39,7 @@ async function fetchTasks(filters: Record<string, string | undefined>): Promise<
 
 /**
  * TaskList component displays a grid of task cards
- * 
+ *
  * Features:
  * - React Query for data fetching with automatic caching
  * - Automatic refetch when filters change (queryKey includes filters)
@@ -47,20 +47,20 @@ async function fetchTasks(filters: Record<string, string | undefined>): Promise<
  * - Error state with user-friendly message
  * - Empty state when no tasks found
  * - Responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop
- * 
+ *
  * States:
  * - isLoading: Shows spinner in center
  * - error: Shows red alert box with error message
  * - empty (!tasks || tasks.length === 0): Shows "Brak zadań" message
  * - success: Shows grid of TaskCard components
- * 
+ *
  * Performance:
  * - Click handler memoized with useCallback to prevent TaskCard re-renders
  * - React Query caching reduces API calls
- * 
+ *
  * @example
  * ```tsx
- * <TaskList 
+ * <TaskList
  *   filters={{ status: 'todo', priority: 'high' }}
  *   onTaskClick={(task) => navigate(`/tasks/${task.id}`)}
  * />
@@ -70,21 +70,28 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { data: tasks, isLoading, error } = useQuery({
+  const {
+    data: tasks,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["tasks", filters],
     queryFn: () => fetchTasks(filters),
   });
 
   // Memoize the click handler to prevent unnecessary re-renders of TaskCard
-  const handleTaskClick = useCallback((task: TaskDTO) => {
-    if (onTaskClick) {
-      onTaskClick(task);
-    } else {
-      // Default behavior: open edit modal
-      setSelectedTask(task);
-      setIsEditModalOpen(true);
-    }
-  }, [onTaskClick]);
+  const handleTaskClick = useCallback(
+    (task: TaskDTO) => {
+      if (onTaskClick) {
+        onTaskClick(task);
+      } else {
+        // Default behavior: open edit modal
+        setSelectedTask(task);
+        setIsEditModalOpen(true);
+      }
+    },
+    [onTaskClick]
+  );
 
   // Update selected task when modal closes to reset state
   const handleModalClose = useCallback((open: boolean) => {
@@ -96,9 +103,9 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
 
   if (isLoading) {
     return (
-      <div 
-        className="flex items-center justify-center py-12" 
-        role="status" 
+      <div
+        className="flex items-center justify-center py-12"
+        role="status"
         aria-live="polite"
         aria-label="Ładowanie zadań"
       >
@@ -110,7 +117,7 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
 
   if (error) {
     return (
-      <div 
+      <div
         className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-900"
         role="alert"
         aria-live="assertive"
@@ -122,11 +129,7 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
 
   if (!tasks || tasks.length === 0) {
     return (
-      <div 
-        className="rounded-lg border bg-muted p-12 text-center"
-        role="status"
-        aria-live="polite"
-      >
+      <div className="rounded-lg border bg-muted p-12 text-center" role="status" aria-live="polite">
         <p className="text-muted-foreground">Brak zadań do wyświetlenia</p>
       </div>
     );
@@ -134,7 +137,7 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
 
   return (
     <>
-      <div 
+      <div
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         role="list"
         aria-label={`Lista zadań (${tasks.length})`}
@@ -146,12 +149,7 @@ export function TaskList({ filters = {}, onTaskClick, userId }: TaskListProps) {
         ))}
       </div>
 
-      <EditTaskModal
-        task={selectedTask}
-        open={isEditModalOpen}
-        onOpenChange={handleModalClose}
-      />
+      <EditTaskModal task={selectedTask} open={isEditModalOpen} onOpenChange={handleModalClose} />
     </>
   );
 }
-

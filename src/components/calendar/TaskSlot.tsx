@@ -43,7 +43,7 @@ export function TaskSlot({
         priorityColors[task.priority] || priorityColors.medium,
         hasOverlap && "bg-stripes-red border-red-500",
         isDragging && "opacity-50",
-        onClick && "cursor-pointer hover:shadow-md",
+        onClick && "cursor-pointer hover:shadow-md"
       )}
       style={style}
       onClick={onClick}
@@ -96,4 +96,3 @@ export function TaskSlot({
     </div>
   );
 }
-

@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 /**
  * GET /api/users
- * 
+ *
  * TEMPORARY: List all users (no authentication required in test mode)
  * This endpoint is for testing purposes only
  */
@@ -51,5 +51,3 @@ export const GET: APIRoute = async ({ locals }) => {
     );
   }
 };
-
-

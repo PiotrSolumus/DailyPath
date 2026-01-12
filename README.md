@@ -25,6 +25,15 @@ Badges: [Node 22.14.0](https://img.shields.io/badge/node-22.14.0-339933?logo=nod
 - shadcn/ui (React primitives + utilities)
 - Supporting libraries: `@astrojs/react`, `@astrojs/node`, `@astrojs/sitemap`, `class-variance-authority`, `clsx`, `lucide-react`, `tailwind-merge`, `tw-animate-css`
 
+### Testing
+
+- **Unit & Integration tests**: Vitest — testy jednostkowe i integracyjne
+- **E2E tests**: Playwright — testy end-to-end
+- **Component tests**: Testing Library — testy komponentów React
+- **Test infrastructure**: Supabase Test Containers — lokalne środowisko testowe dla integracji z bazą danych
+
+For detailed testing documentation, see [.ai/test-plan.md](.ai/test-plan.md).
+
 ## Getting started locally
 
 Prerequisites:
@@ -78,6 +87,8 @@ npm run preview
 - `npm run lint` — Run ESLint over the project
 - `npm run lint:fix` — Fix lint issues where possible
 - `npm run format` — Format files with Prettier
+- `npm run test` — Run unit and integration tests (Vitest)
+- `npm run test:e2e` — Run end-to-end tests (Playwright)
 
 ## Authentication & authorization
 

@@ -79,7 +79,7 @@ export function OnboardingWizard() {
       JSON.stringify({
         step: currentStep,
         data,
-      }),
+      })
     );
   }, [currentStep, data]);
 
@@ -106,9 +106,7 @@ export function OnboardingWizard() {
         body: JSON.stringify({
           schedule: data.workingHours.days.map((day) => ({
             weekday: day,
-            periods: [
-              `[${data.workingHours.startHour * 60}, ${data.workingHours.endHour * 60})`,
-            ],
+            periods: [`[${data.workingHours.startHour * 60}, ${data.workingHours.endHour * 60})`],
           })),
         }),
       });
@@ -189,9 +187,15 @@ export function OnboardingWizard() {
           </CardHeader>
 
           <CardContent>
-            {currentStep === 0 && <WorkingHoursStep data={data.workingHours} onChange={(wh) => updateData({ workingHours: wh })} />}
-            {currentStep === 1 && <TimezoneStep timezone={data.timezone} onChange={(tz) => updateData({ timezone: tz })} />}
-            {currentStep === 2 && <PreferencesStep data={data.preferences} onChange={(p) => updateData({ preferences: p })} />}
+            {currentStep === 0 && (
+              <WorkingHoursStep data={data.workingHours} onChange={(wh) => updateData({ workingHours: wh })} />
+            )}
+            {currentStep === 1 && (
+              <TimezoneStep timezone={data.timezone} onChange={(tz) => updateData({ timezone: tz })} />
+            )}
+            {currentStep === 2 && (
+              <PreferencesStep data={data.preferences} onChange={(p) => updateData({ preferences: p })} />
+            )}
           </CardContent>
 
           <CardFooter className="flex justify-between">
@@ -216,4 +220,3 @@ export function OnboardingWizard() {
     </div>
   );
 }
-

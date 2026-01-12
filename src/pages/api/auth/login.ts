@@ -127,7 +127,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (userData.id !== data.user.id) {
       console.warn(
         `⚠️ User ID mismatch: public.users.id (${userData.id}) != auth.users.id (${data.user.id}) for ${email}. ` +
-        `Using public.users.id. RLS policies may not work correctly. Consider updating the user ID manually.`
+          `Using public.users.id. RLS policies may not work correctly. Consider updating the user ID manually.`
       );
       // Don't update ID automatically as it could break foreign key relationships
       // The user can still log in, but RLS might not work correctly until IDs are synced

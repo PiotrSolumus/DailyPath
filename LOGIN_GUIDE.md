@@ -22,7 +22,22 @@ Możesz zalogować się używając następujących kont:
 
 ## 🚀 Jak się zalogować
 
-1. Upewnij się, że serwer deweloperski działa:
+1. **Upewnij się, że Docker Desktop jest uruchomiony** ⚠️
+   - Docker Desktop musi być uruchomiony przed Supabase
+
+2. **Uruchom Supabase** (jeśli nie jest uruchomiony):
+   ```bash
+   npx supabase start
+   ```
+   Poczekaj aż zobaczysz: "Started supabase local development setup"
+
+3. **Upewnij się, że użytkownicy testowi istnieją**:
+   ```bash
+   node scripts/create-test-users.js
+   ```
+   Ten skrypt utworzy użytkowników testowych jeśli jeszcze nie istnieją.
+
+4. **Uruchom serwer deweloperski**:
    ```bash
    npm run dev
    ```
@@ -48,15 +63,25 @@ Możesz zalogować się używając następujących kont:
 
 Jeśli logowanie nie działa:
 
-1. **Sprawdź konsolę przeglądarki** - wszystkie logi są tam wyświetlane
-2. **Sprawdź terminal** - logi serwera są wyświetlane w terminalu gdzie uruchomiłeś `npm run dev`
-3. **Sprawdź czy Supabase działa**:
+1. **Sprawdź czy Docker Desktop jest uruchomiony** ⚠️ **WAŻNE**
+   - Docker Desktop musi być uruchomiony przed uruchomieniem Supabase
+   - Sprawdź czy Docker Desktop działa w systemie Windows
+   - Jeśli nie, uruchom Docker Desktop i poczekaj aż się w pełni załaduje
+
+2. **Sprawdź konsolę przeglądarki** - wszystkie logi są tam wyświetlane
+3. **Sprawdź terminal** - logi serwera są wyświetlane w terminalu gdzie uruchomiłeś `npm run dev`
+4. **Sprawdź czy Supabase działa**:
    ```bash
    npx supabase status
    ```
    Powinno pokazać że wszystkie usługi są uruchomione.
+   
+   Jeśli widzisz błąd `ECONNREFUSED` lub `Docker Desktop is a prerequisite`:
+   - Uruchom Docker Desktop
+   - Następnie uruchom: `npx supabase start`
+   - Poczekaj aż wszystkie usługi się uruchomią (może to zająć 1-2 minuty)
 
-4. **Sprawdź Supabase Studio**:
+5. **Sprawdź Supabase Studio**:
    - Otwórz http://127.0.0.1:54323
    - Przejdź do Authentication > Users
    - Sprawdź czy użytkownicy istnieją
@@ -72,12 +97,14 @@ Użytkownicy mogą być dodawani wyłącznie przez administratora w panelu admin
 
 ## 🔧 Rozwiązywanie problemów
 
-### Problem: "Wystąpił błąd podczas logowania"
+### Problem: "Wystąpił błąd podczas logowania" lub "fetch failed" lub "ECONNREFUSED"
 
 **Rozwiązanie:**
-1. Sprawdź czy Supabase jest uruchomiony: `npx supabase status`
-2. Jeśli nie działa, uruchom: `npx supabase start`
-3. Odśwież stronę logowania
+1. **Uruchom Docker Desktop** (jeśli nie jest uruchomiony)
+2. Sprawdź czy Supabase jest uruchomiony: `npx supabase status`
+3. Jeśli nie działa, uruchom: `npx supabase start`
+   - Poczekaj aż zobaczysz: "Started supabase local development setup"
+4. Odśwież stronę logowania
 
 ### Problem: "Nieprawidłowy email lub hasło"
 

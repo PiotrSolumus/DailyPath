@@ -59,13 +59,7 @@ export function WeekTaskSlot({
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      className="absolute px-1"
-      style={style} 
-      {...attributes} 
-      {...listeners}
-    >
+    <div ref={setNodeRef} className="absolute px-1" style={style} {...attributes} {...listeners}>
       <TaskSlot
         task={task}
         startTime={startTime}
@@ -78,5 +72,3 @@ export function WeekTaskSlot({
     </div>
   );
 }
-
-

@@ -17,7 +17,7 @@ export function TimeSlot({ time, timezone, isHourStart, isSelected, onClick, chi
         "relative min-h-[40px] border-b border-r transition-colors",
         isHourStart ? "border-t-2 border-t-border" : "border-t border-t-border/30",
         isSelected && "bg-accent",
-        onClick && "cursor-pointer hover:bg-accent/50",
+        onClick && "cursor-pointer hover:bg-accent/50"
       )}
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -32,4 +32,3 @@ export function TimeSlot({ time, timezone, isHourStart, isSelected, onClick, chi
     </div>
   );
 }
-

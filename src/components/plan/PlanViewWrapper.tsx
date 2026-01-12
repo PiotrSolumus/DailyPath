@@ -16,4 +16,3 @@ export function PlanViewWrapper({ userId, timezone, isManagerView, initialUser }
     </AppProviders>
   );
 }
-

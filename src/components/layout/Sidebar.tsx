@@ -1,7 +1,8 @@
-import { Home, Calendar, CheckSquare, Clock, FileText, Users, Settings, Crown, LogOut } from "lucide-react";
+import { Home, Calendar, CheckSquare, Clock, FileText, Users, Settings, Crown, LogOut, FolderPlus } from "lucide-react";
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { cn } from "../../lib/utils";
 import type { Enums } from "../../db/database.types";
+import { CreateTaskModal } from "../tasks/CreateTaskModal";
 
 interface NavItem {
   label: string;
@@ -81,7 +82,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
   };
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-card">
+    <aside className="flex h-screen w-64 flex-col border-r bg-card" data-test-id="sidebar">
       {/* Header */}
       <div className="flex h-16 items-center border-b px-6">
         <h1 className="text-xl font-bold">DailyPath</h1>
@@ -109,7 +110,12 @@ export function Sidebar({ currentPath }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4" data-test-id="sidebar-navigation">
+        {/* Create Task Button */}
+        <div className="mb-2">
+          <CreateTaskModal />
+        </div>
+
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.href;
@@ -118,11 +124,12 @@ export function Sidebar({ currentPath }: SidebarProps) {
             <a
               key={item.href}
               href={item.href}
+              data-test-id={`sidebar-nav-${item.href.replace("/", "") || "home"}`}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
             >
@@ -143,6 +150,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
         <div className="border-t p-4">
           <button
             onClick={handleLogout}
+            data-test-id="sidebar-logout-button"
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <LogOut className="h-5 w-5" />
@@ -153,4 +161,3 @@ export function Sidebar({ currentPath }: SidebarProps) {
     </aside>
   );
 }
-

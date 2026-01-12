@@ -84,11 +84,7 @@ export function KeyboardPlanControls({ selectedSlot, onMove }: KeyboardPlanContr
         <div className="space-y-2">
           <Label>Przenieś do godziny:</Label>
           <div className="flex gap-2">
-            <Select
-              value={selectedHour}
-              onChange={(e) => setSelectedHour(e.target.value)}
-              aria-label="Wybierz godzinę"
-            >
+            <Select value={selectedHour} onChange={(e) => setSelectedHour(e.target.value)} aria-label="Wybierz godzinę">
               {Array.from({ length: 24 }, (_, i) => (
                 <option key={i} value={i.toString().padStart(2, "0")}>
                   {i.toString().padStart(2, "0")}
@@ -116,4 +112,3 @@ export function KeyboardPlanControls({ selectedSlot, onMove }: KeyboardPlanContr
     </div>
   );
 }
-

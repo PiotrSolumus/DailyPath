@@ -78,12 +78,12 @@ export function TimeLogCard({ timeLog, onEdit, onDelete }: TimeLogCardProps) {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <span className="font-medium">{formatDuration(minutes)}</span>
-              {!editable && (
-                <span className="text-xs text-muted-foreground">(nie można edytować)</span>
-              )}
+              {!editable && <span className="text-xs text-muted-foreground">(nie można edytować)</span>}
             </div>
             <div className="text-sm text-muted-foreground">
-              <div>{formatDate(start)} - {formatDate(end)}</div>
+              <div>
+                {formatDate(start)} - {formatDate(end)}
+              </div>
             </div>
           </div>
         </div>
@@ -91,22 +91,12 @@ export function TimeLogCard({ timeLog, onEdit, onDelete }: TimeLogCardProps) {
         {editable && (
           <div className="flex items-center gap-2">
             {onEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(timeLog)}
-                aria-label="Edytuj log czasu"
-              >
+              <Button variant="ghost" size="sm" onClick={() => onEdit(timeLog)} aria-label="Edytuj log czasu">
                 <Edit className="h-4 w-4" />
               </Button>
             )}
             {onDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(timeLog.id)}
-                aria-label="Usuń log czasu"
-              >
+              <Button variant="ghost" size="sm" onClick={() => onDelete(timeLog.id)} aria-label="Usuń log czasu">
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             )}
@@ -116,4 +106,3 @@ export function TimeLogCard({ timeLog, onEdit, onDelete }: TimeLogCardProps) {
     </Card>
   );
 }
-

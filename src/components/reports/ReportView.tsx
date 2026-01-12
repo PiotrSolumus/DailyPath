@@ -55,7 +55,7 @@ export function ReportView({ initialFilters = {} }: ReportViewProps) {
           zarejestrowany_czas_minuty: r.logged_minutes,
           zaplanowany_czas_minuty: r.plan_minutes,
           zadania: r.task_summary.map((ts) => `${ts.status}: ${ts.count}`).join("; "),
-        })),
+        }))
       );
 
       exportToCSV(flatData, "raport_dzienny");
@@ -74,4 +74,3 @@ export function ReportView({ initialFilters = {} }: ReportViewProps) {
     </div>
   );
 }
-

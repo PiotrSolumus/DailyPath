@@ -16,7 +16,7 @@ export type TimeLogQueryParams = z.infer<typeof timeLogQuerySchema>;
 /**
  * Schema for POST /api/time-logs endpoint
  * Validates time log creation payload
- * 
+ *
  * Note: The period will be automatically rounded to 15-minute intervals by the database
  */
 export const createTimeLogSchema = z.object({
@@ -29,7 +29,7 @@ export type CreateTimeLogInput = z.infer<typeof createTimeLogSchema>;
 /**
  * Schema for PATCH /api/time-logs/:id endpoint
  * Validates time log update payload
- * 
+ *
  * Note: Can only update time logs from the last 7 days (enforced by database)
  */
 export const updateTimeLogSchema = z.object({
@@ -37,4 +37,3 @@ export const updateTimeLogSchema = z.object({
 });
 
 export type UpdateTimeLogInput = z.infer<typeof updateTimeLogSchema>;
-
