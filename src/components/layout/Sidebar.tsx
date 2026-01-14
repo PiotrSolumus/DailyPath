@@ -3,6 +3,7 @@ import { useAuth } from "../../lib/contexts/AuthContext";
 import { cn } from "../../lib/utils";
 import type { Enums } from "../../db/database.types";
 import { CreateTaskModal } from "../tasks/CreateTaskModal";
+import { ThemeToggle } from "../ui/theme-toggle";
 
 interface NavItem {
   label: string;
@@ -84,8 +85,9 @@ export function Sidebar({ currentPath }: SidebarProps) {
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-card" data-test-id="sidebar">
       {/* Header */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center justify-between border-b px-6">
         <h1 className="text-xl font-bold">DailyPath</h1>
+        <ThemeToggle />
       </div>
 
       {/* User Info or Login Prompt */}

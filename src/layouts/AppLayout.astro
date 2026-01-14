@@ -20,6 +20,15 @@ const currentPath = Astro.url.pathname;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('daily-path-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'dark' || (!theme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <AppLayout client:load initialUser={user} currentPath={currentPath}>

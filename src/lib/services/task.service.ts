@@ -115,6 +115,7 @@ export async function listTasks(
         created_by_user_id: task.created_by_user_id,
         is_private: task.is_private,
         eta,
+        updated_at: task.updated_at,
       };
     });
 

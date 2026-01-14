@@ -3,6 +3,7 @@ import { NuqsAdapter } from "nuqs/adapters/react";
 import { QueryProvider } from "./QueryProvider";
 import { AuthProvider } from "./AuthContext";
 import { ToastProvider } from "./ToastProvider";
+import { ThemeProvider } from "./ThemeContext";
 import type { UserMeDTO } from "../../types";
 
 interface AppProvidersProps {
@@ -14,9 +15,11 @@ export function AppProviders({ children, initialUser }: AppProvidersProps) {
   return (
     <NuqsAdapter>
       <QueryProvider>
-        <AuthProvider initialUser={initialUser}>
-          <ToastProvider>{children}</ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider initialUser={initialUser}>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </QueryProvider>
     </NuqsAdapter>
   );
